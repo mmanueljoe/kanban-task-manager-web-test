@@ -1,73 +1,102 @@
-# React + TypeScript + Vite
+# Kanban Task Management Web App
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A Kanban-style task management web app built with **React**, **TypeScript**, and **Vite**. This project focuses on **routing and navigation**, **handling incorrect routes gracefully**, and **implementing protected routes**.
 
-Currently, two official plugins are available:
+## Project focus
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+### Routing and navigation
 
-## React Compiler
+- **Single route config**: All routes are defined in [`src/routes/RouteProvider.tsx`](src/routes/RouteProvider.tsx) using React Router (`react-router`).
+- **Nested routes**: Main app routes use a shared [`Layout`](src/components/layout/Layout.tsx) (Header, Aside, theme toggle) with an `<Outlet />` for the current page. Dashboard, board view, and admin live under this layout; login and the 404 page are outside it (no sidebar/header).
+- **Navigation**: Pages use `<Link>` for navigation and `useNavigate` / `useParams` where needed (e.g. board ID from the URL).
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### Handling incorrect routes gracefully
+
+- **Unknown URLs**: A catch-all route (`path="*"`) renders the [NotFound](src/pages/NotFound.tsx) page: “Page not found” plus a “Go to Dashboard” button so users can recover without leaving the app.
+- **Invalid board IDs**: For `/board/:boardId`, [BoardView](src/pages/BoardView.tsx) validates the param (numeric and in range). If the board doesn’t exist, it shows “Board not found” with a “Return to Dashboard” link instead of a broken or empty view.
+
+### Protected routes
+
+- **[ProtectedRoute](src/components/ProtectedRoute.tsx)** wraps any route that requires authentication. It uses `useAuth()`; if the user is not logged in, it renders `<Navigate to="/login" replace />`. Otherwise it renders the child content.
+- Protected routes in this app: `/board/:boardId` and `/admin`. Unauthenticated users hitting these URLs are redirected to `/login`.
+
+## Screenshots
+
+Run `yarn dev` and capture the following screens. Save images into `docs/screenshots/` (see [docs/screenshots/README.txt](docs/screenshots/README.txt) for the list).
+
+### Dashboard
+
+![Dashboard](docs/screenshots/dashboard.png)
+
+_Route: `/` — List of boards and entry to the app._
+
+### Board view
+
+![Board view](docs/screenshots/board-view.png)
+
+_Route: `/board/0` — Kanban board with columns and tasks (protected)._
+
+### Login
+
+![Login](docs/screenshots/login.png)
+
+_Route: `/login` — Mock login; after submit, redirects to Dashboard._
+
+### Admin (protected)
+
+![Admin](docs/screenshots/admin.png)
+
+_Route: `/admin` — Protected page; redirects to Login when not logged in._
+
+### 404 – Page not found
+
+![Not found](docs/screenshots/not-found.png)
+
+_Route: any unknown path (e.g. `/unknown-path`) — Catch-all route._
+
+### Board not found
+
+![Board not found](docs/screenshots/board-not-found.png)
+
+_Route: e.g. `/board/999` or `/board/abc` — Invalid board ID handled inside BoardView._
+
+## Lessons learnt
+
+- **Centralized routes**: Defining all routes in one component ([RouteProvider](src/routes/RouteProvider.tsx)) keeps layout and auth decisions in one place and makes the app structure easy to follow.
+- **Protected routes as a wrapper**: Using a `<ProtectedRoute>` wrapper keeps the route config declarative: wrap the component that needs auth; no extra logic inside the page.
+- **Two kinds of “wrong” routes**: A catch-all `*` route handles unknown paths; validating params inside a page (e.g. board ID in BoardView) handles invalid resource IDs. Together they cover both cases without leaving users on a broken screen.
+- **Auth context + persistence**: [AuthContext](src/context/AuthContext.tsx) holds login state; [localStorage](src/utils/localStorage.ts) persists it so redirects and “logged in” state survive refresh.
+
+## Concepts to improve
+
+- **Real authentication**: Replace mock login with a backend (e.g. JWT, session cookies) and proper sign-in/sign-out flows.
+- **Role-based access**: Extend protected routes with roles (e.g. admin-only routes) and permission checks.
+- **Route-level code splitting**: Use `React.lazy` and `Suspense` per route to reduce initial bundle size.
+- **Error boundaries**: Add route-level or app-level error boundaries so runtime errors show a fallback UI instead of a blank screen.
+- **Accessibility**: Improve focus management, ARIA labels, and keyboard navigation, especially in modals and dynamic content.
+- **Testing**: Add tests for routing (e.g. correct component per URL), protected route redirect, and NotFound/board-not-found behavior.
+
+## Areas to improve
+
+- **Loading and skeletons**: Add loading states or skeleton UIs for boards and tasks instead of rendering raw data immediately.
+- **Data source**: Replace static [data.json](src/data/data.json) with an API (REST or GraphQL) and handle loading/error states.
+- **Forms**: Add validation and clear error messages on login and other forms.
+- **Responsive and polish**: Refine layout and interactions on small screens and touch devices.
+- **SEO and meta**: Set per-route meta tags (e.g. title, description) for better sharing and SEO.
+- **CI**: Run lint and tests (e.g. Vitest, React Testing Library) in CI on push or PR.
+
+## Quick start
+
+```bash
+# Install dependencies
+yarn
+
+# Start dev server
+yarn dev
+```
+
+See [docs/SETUP-GUIDE.md](docs/SETUP-GUIDE.md) for more setup details. For routing and file structure, see [docs/ROUTING-AND-STRUCTURE.md](docs/ROUTING-AND-STRUCTURE.md).
 
 ## Expanding the ESLint configuration
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-]);
-```
-
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x';
-import reactDom from 'eslint-plugin-react-dom';
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-]);
-```
+This project uses the default Vite + React + TypeScript ESLint setup. For production apps, you may want to enable type-aware lint rules or extra React plugins. See [Vite’s ESLint documentation](https://vite.dev/guide/features.html#eslint) and the [TypeScript ESLint docs](https://typescript-eslint.io/) for options.

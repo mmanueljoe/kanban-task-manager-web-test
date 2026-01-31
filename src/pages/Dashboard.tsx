@@ -23,7 +23,9 @@ export function Dashboard() {
   return (
     <div className="app-main">
       <h1 className="heading-xl app-section-title">Dashboard</h1>
-      <p className="body-l">Select a board from the sidebar or below.</p>
+      <p className="body-l text-primary">
+        Select a board from the sidebar or below.
+      </p>
       <div className="app-stack-4" style={{ marginTop: 24 }}>
         {boards.map((board, index) => (
           <Link

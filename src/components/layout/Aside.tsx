@@ -21,7 +21,7 @@ export function Aside({ onHideSidebar }: AsideProps) {
 
   return (
     <aside className="app-aside">
-      <div className="app-aside-brand">
+      <Link to="/" className="app-aside-brand cursor-pointer">
         <img
           src={logoMobile}
           alt=""
@@ -29,7 +29,7 @@ export function Aside({ onHideSidebar }: AsideProps) {
           aria-hidden
         />
         <span className="app-aside-brand-text">kanban</span>
-      </div>
+      </Link>
       <p className="heading-s app-aside-title">ALL BOARDS ({boards.length})</p>
       <nav className="app-aside-nav">
         {boards.map((board, index) => (
