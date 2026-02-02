@@ -1,0 +1,54 @@
+@layer components {
+  /* Modal overlay and content */
+  .app-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    background: rgb(0 0 0 / 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    box-sizing: border-box;
+    animation: app-fade-in 0.15s ease-out;
+  }
+  .app-modal {
+    width: 100%;
+    max-width: 480px;
+    max-height: calc(100vh - 32px);
+    overflow-y: auto;
+    border-radius: 8px;
+    background-color: var(--bg-main);
+    padding: 24px;
+    box-shadow: 0 10px 25px rgb(0 0 0 / 0.2);
+  }
+  .app-modal-title {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 700;
+    font-size: 18px;
+    line-height: 23px;
+    color: var(--text-primary);
+    margin: 0 0 24px 0;
+  }
+  .app-modal-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 24px;
+  }
+  .app-modal-actions .btn {
+    width: 100%;
+    justify-content: center;
+  }
+  .app-modal-delete-title {
+    color: var(--destructive);
+  }
+  @keyframes app-fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+}

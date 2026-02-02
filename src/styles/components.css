@@ -1,0 +1,364 @@
+@layer components {
+  /* Button: base + variants (Figma) + sizes */
+  .btn {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 700;
+    border-radius: 9999px;
+    border-width: 2px;
+    transition:
+      background-color 0.15s,
+      border-color 0.15s;
+    cursor: pointer;
+  }
+  .btn:focus {
+    outline: none;
+  }
+  .btn:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+  }
+
+  .btn-primary {
+    background-color: var(--primary);
+    color: white;
+    border-color: var(--primary);
+  }
+  .btn-primary:hover {
+    background-color: var(--primary-hover);
+    border-color: var(--primary-hover);
+  }
+
+  .btn-secondary {
+    background-color: transparent;
+    color: var(--primary);
+    border-color: var(--primary);
+  }
+  .btn-secondary:hover {
+    background-color: var(--lines);
+  }
+
+  .btn-destructive {
+    background-color: var(--destructive);
+    color: white;
+    border-color: var(--destructive);
+  }
+  .btn-destructive:hover {
+    background-color: var(--destructive-hover);
+    border-color: var(--destructive-hover);
+  }
+
+  .btn-large {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 500;
+    font-size: 13px;
+    line-height: 23px;
+    padding: 12px 24px;
+  }
+
+  .btn-small {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 700;
+    font-size: 12px;
+    line-height: 19px;
+    padding: 8px 16px;
+  }
+
+  /* Input: wrap, label, field, error (Figma) */
+  .input-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .input-label {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 700;
+    font-size: 12px;
+    line-height: 19px;
+    color: var(--text-primary);
+  }
+  .input {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 500;
+    font-size: 13px;
+    line-height: 23px;
+    width: 100%;
+    border-radius: 4px;
+    border: 1px solid var(--lines);
+    background-color: var(--bg-main);
+    color: var(--text-primary);
+    padding: 12px 16px;
+    transition: border-color 0.15s;
+  }
+  .input::placeholder {
+    color: var(--text-muted);
+  }
+  .input:focus {
+    outline: none;
+    border-color: var(--primary);
+  }
+  .input.input-error {
+    border-color: var(--destructive);
+  }
+  .input-error-text {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 700;
+    font-size: 12px;
+    line-height: 19px;
+    color: var(--destructive);
+  }
+
+  /* Checkbox: row, box, label (Figma subtask) */
+  .checkbox {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    cursor: pointer;
+    border-radius: 4px;
+    padding: 12px 16px;
+    background-color: var(--bg-main);
+    transition: background-color 0.15s;
+  }
+  .checkbox:hover {
+    background-color: var(--secondary-bg);
+  }
+  [data-theme='dark'] .checkbox:hover {
+    background-color: var(--lines);
+  }
+  .checkbox-box {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+    border-radius: 2px;
+    border: 2px solid var(--lines);
+    background-color: var(--bg-main);
+    transition:
+      border-color 0.15s,
+      background-color 0.15s;
+  }
+  .checkbox-box.checked {
+    border-color: var(--primary);
+    background-color: var(--primary);
+  }
+  .checkbox-input {
+    position: absolute;
+    inset: 0;
+    cursor: pointer;
+    opacity: 0;
+  }
+  .checkbox-label {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 700;
+    font-size: 12px;
+    line-height: 19px;
+    color: var(--text-primary);
+  }
+  .checkbox-label.checked {
+    text-decoration: line-through;
+    opacity: 0.6;
+  }
+
+  /* Dropdown: container, trigger, list, option (Figma) */
+  .dropdown {
+    position: relative;
+  }
+  .dropdown-trigger {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 500;
+    font-size: 13px;
+    line-height: 23px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    border-radius: 4px;
+    border: 1px solid var(--lines);
+    background-color: var(--bg-main);
+    color: var(--text-primary);
+    padding: 12px 16px;
+    transition: border-color 0.15s;
+    cursor: pointer;
+    text-align: left;
+  }
+  .dropdown-trigger:hover,
+  .dropdown-trigger:focus {
+    outline: none;
+    border-color: var(--primary);
+  }
+  .dropdown-trigger.open {
+    border-color: var(--primary);
+  }
+  .dropdown-chevron {
+    transition: transform 0.2s;
+  }
+  .dropdown-chevron.open {
+    transform: rotate(180deg);
+  }
+  .dropdown-list {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 10;
+    margin: 4px 0 0;
+    padding: 8px 0;
+    list-style: none;
+    border-radius: 8px;
+    border: 1px solid var(--lines);
+    background-color: var(--bg-main);
+    box-shadow:
+      0 10px 15px -3px rgb(0 0 0 / 0.1),
+      0 4px 6px -4px rgb(0 0 0 / 0.1);
+  }
+  .dropdown-list li {
+    margin: 0;
+    padding: 0;
+  }
+  .dropdown-option {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 500;
+    font-size: 13px;
+    line-height: 23px;
+    width: 100%;
+    padding: 8px 16px;
+    text-align: left;
+    color: var(--text-muted);
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition:
+      background-color 0.15s,
+      color 0.15s;
+  }
+  .dropdown-option:hover {
+    background-color: var(--secondary-bg);
+    color: var(--text-primary);
+  }
+  [data-theme='dark'] .dropdown-option:hover {
+    background-color: var(--lines);
+  }
+  .dropdown-option.selected {
+    color: var(--text-primary);
+  }
+
+  /* Board selector dropdown (mobile header) */
+  .app-board-dropdown {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 0 16px;
+    padding-top: 80px;
+    background: rgb(0 0 0 / 0.5);
+    animation: app-fade-in 0.15s ease-out;
+  }
+  .app-board-dropdown-panel {
+    width: 100%;
+    max-width: 480px;
+    border-radius: 8px;
+    background-color: var(--bg-main);
+    padding: 16px;
+    box-shadow: 0 10px 25px rgb(0 0 0 / 0.2);
+  }
+  .app-board-dropdown-title {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 700;
+    font-size: 12px;
+    line-height: 15px;
+    letter-spacing: 2.4px;
+    color: var(--text-muted);
+    margin: 0 0 16px 0;
+    padding: 0 12px;
+  }
+  .app-board-dropdown-list {
+    list-style: none;
+    margin: 0 0 16px 0;
+    padding: 0;
+  }
+  .app-board-dropdown-item {
+    display: block;
+    width: 100%;
+    padding: 14px 12px;
+    border-radius: 0 100px 100px 0;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    line-height: 19px;
+    color: var(--text-muted);
+    text-decoration: none;
+    text-align: left;
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition:
+      background-color 0.15s,
+      color 0.15s;
+    margin-bottom: 4px;
+  }
+  .app-board-dropdown-item:hover {
+    background-color: var(--secondary-bg);
+    color: var(--text-primary);
+  }
+  .app-board-dropdown-item.active {
+    background-color: var(--primary);
+    color: white;
+  }
+  .app-board-dropdown-item.create {
+    color: var(--primary);
+  }
+  .app-board-dropdown-theme {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+    padding: 16px 12px 0;
+    border-top: 1px solid var(--lines);
+  }
+  .app-board-dropdown-theme-label {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    line-height: 19px;
+    color: var(--text-primary);
+  }
+  .app-board-dropdown-toggle {
+    width: 40px;
+    height: 20px;
+    border-radius: 12px;
+    background-color: var(--primary);
+    border: none;
+    cursor: pointer;
+    position: relative;
+    padding: 0;
+    flex-shrink: 0;
+  }
+  .app-board-dropdown-toggle::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background-color: white;
+    transition: transform 0.2s;
+  }
+  [data-theme='dark'] .app-board-dropdown-toggle::after {
+    transform: translateX(20px);
+  }
+
+  /* Loading spinner animation */
+  @keyframes app-spinner {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+}

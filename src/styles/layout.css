@@ -1,0 +1,379 @@
+@layer components {
+  /* App layout – mobile first */
+  .app-root {
+    min-height: 100vh;
+    background-color: var(--bg-secondary);
+  }
+  .app-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    border-bottom: 1px solid var(--lines);
+    background-color: var(--bg-main);
+    padding: 16px;
+    min-height: 56px;
+  }
+  @media (min-width: 768px) {
+    .app-header {
+      padding: 24px 32px;
+    }
+  }
+  .app-header-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+  }
+  .app-header-logo {
+    flex-shrink: 0;
+    display: block;
+  }
+  @media (min-width: 768px) {
+    .app-header-logo {
+      display: none;
+    }
+  }
+  .app-header-board-trigger {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 700;
+    font-size: 18px;
+    line-height: 23px;
+    color: var(--text-primary);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px 0;
+    min-width: 0;
+  }
+  .app-header-board-trigger:hover {
+    color: var(--primary);
+  }
+  .app-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+  .app-main {
+    width: 100%;
+    margin: 0;
+    padding: 24px 16px;
+    box-sizing: border-box;
+  }
+  @media (min-width: 768px) {
+    .app-main {
+      max-width: 672px;
+      margin: 0 auto;
+      padding: 48px 32px;
+    }
+  }
+  .app-main-board {
+    padding: 24px 16px;
+    max-width: none;
+    margin: 0;
+  }
+  @media (min-width: 768px) {
+    .app-main-board {
+      padding: 24px;
+    }
+  }
+  .app-main > * + * {
+    margin-top: 3rem;
+  }
+  .app-section-title {
+    margin-bottom: 24px;
+  }
+  .app-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  .app-stack-4 {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .app-stack-2 {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .app-dropdown-wrap {
+    max-width: 320px;
+  }
+
+  /* Layout: shell – mobile: header + main; tablet+: sidebar | (header + main) */
+  .app-layout {
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+    flex-direction: column;
+  }
+  @media (min-width: 768px) {
+    .app-layout {
+      flex-direction: row;
+    }
+  }
+  .app-layout-right {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+    min-height: 0;
+  }
+  .app-layout-main {
+    flex: 1;
+    padding: 0;
+    overflow: auto;
+    min-width: 0;
+  }
+  @media (min-width: 768px) {
+    .app-layout-main {
+      padding: 24px;
+    }
+  }
+  /* Custom scrollbars – main content (vertical) */
+  .app-layout-main {
+    scrollbar-width: thin;
+    scrollbar-color: var(--lines) var(--bg-main);
+  }
+  .app-layout-main::-webkit-scrollbar {
+    width: 8px;
+  }
+  .app-layout-main::-webkit-scrollbar-track {
+    background: var(--bg-main);
+  }
+  .app-layout-main::-webkit-scrollbar-thumb {
+    background: var(--lines);
+    border-radius: 4px;
+  }
+  .app-layout-main::-webkit-scrollbar-thumb:hover {
+    background: var(--text-muted);
+  }
+  .app-aside {
+    display: none;
+    overflow: hidden;
+    padding: 24px 16px;
+    border-right: 1px solid var(--lines);
+    background-color: var(--bg-main);
+    min-width: 260px;
+    width: 260px;
+    flex-shrink: 0;
+    flex-direction: column;
+    transition:
+      margin 0.2s,
+      width 0.2s;
+  }
+  @media (min-width: 768px) {
+    .app-aside {
+      display: flex;
+    }
+  }
+  .app-layout.app-sidebar-hidden .app-aside {
+    width: 0;
+    min-width: 0;
+    overflow: hidden;
+    padding: 0;
+    border: none;
+  }
+  .app-aside-brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 12px 24px;
+    margin-bottom: 16px;
+    border-bottom: 1px solid var(--lines);
+  }
+  .app-aside-brand-icon {
+    width: 24px;
+    height: 25px;
+    flex-shrink: 0;
+    object-fit: contain;
+  }
+  @media (min-width: 768px) {
+    .app-aside-brand-icon {
+      width: 28px;
+      height: 29px;
+    }
+  }
+  .app-aside-brand-text {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 700;
+    font-size: 24px;
+    line-height: 30px;
+    color: var(--text-primary);
+  }
+  .app-aside-title {
+    color: var(--text-muted);
+    margin-bottom: 16px;
+    padding: 0 12px;
+    font-size: 12px;
+    line-height: 15px;
+    letter-spacing: 2.4px;
+  }
+  .app-aside-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--lines) var(--bg-main);
+  }
+  .app-aside-nav::-webkit-scrollbar {
+    width: 6px;
+  }
+  .app-aside-nav::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .app-aside-nav::-webkit-scrollbar-thumb {
+    background: var(--lines);
+    border-radius: 3px;
+  }
+  .app-aside-nav::-webkit-scrollbar-thumb:hover {
+    background: var(--text-muted);
+  }
+  .app-aside-link {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    line-height: 19px;
+    color: var(--text-muted);
+    text-decoration: none;
+    padding: 12px 12px;
+    border-radius: 0 100px 100px 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition:
+      background-color 0.15s,
+      color 0.15s;
+  }
+  .app-aside-link:hover {
+    background-color: var(--secondary-bg);
+    color: var(--text-primary);
+  }
+  .app-aside-link.active {
+    background-color: var(--primary);
+    color: white;
+  }
+  .app-aside-link.create {
+    color: var(--primary);
+  }
+  .app-aside-footer {
+    padding-top: 16px;
+    margin-top: 16px;
+    border-top: 1px solid var(--lines);
+  }
+  .app-aside-theme {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+    padding: 16px 12px;
+  }
+  .app-aside-hide {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 14px 12px;
+    border: none;
+    background: none;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    line-height: 19px;
+    color: var(--text-muted);
+    cursor: pointer;
+    border-radius: 0 100px 100px 0;
+    transition:
+      background-color 0.15s,
+      color 0.15s;
+  }
+  .app-aside-hide:hover {
+    background-color: var(--secondary-bg);
+    color: var(--text-primary);
+  }
+  .app-show-sidebar-tab {
+    display: none;
+    position: fixed;
+    left: 0;
+    bottom: 32px;
+    width: 56px;
+    height: 48px;
+    border-radius: 0 100px 100px 0;
+    background-color: var(--primary);
+    border: none;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    z-index: 30;
+    transition: background-color 0.15s;
+  }
+  .app-show-sidebar-tab:hover {
+    background-color: var(--primary-hover);
+  }
+  @media (min-width: 768px) {
+    .app-layout.app-sidebar-hidden .app-show-sidebar-tab {
+      display: flex;
+    }
+  }
+  .app-header-board-trigger {
+    display: flex;
+  }
+  .app-header-board-name {
+    display: none;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 700;
+    font-size: 18px;
+    line-height: 23px;
+    color: var(--text-primary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  @media (min-width: 768px) {
+    .app-header-board-trigger {
+      display: none;
+    }
+    .app-header-board-name {
+      display: block;
+    }
+  }
+  .app-header-add-task {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px;
+    min-width: 48px;
+  }
+  .app-header-add-label {
+    display: none;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    line-height: 19px;
+  }
+  .app-header-add-task-icon {
+    display: block;
+  }
+  @media (min-width: 768px) {
+    .app-header-add-task {
+      padding: 12px 24px;
+      min-width: auto;
+    }
+    .app-header-add-task-icon {
+      display: none;
+    }
+    .app-header-add-label {
+      display: inline;
+    }
+  }
+}
