@@ -44,7 +44,6 @@ export function AddTaskModal({
         type: 'error',
         message: 'Please provide a title and status for the task.',
       });
-      onClose();
       return;
     }
 

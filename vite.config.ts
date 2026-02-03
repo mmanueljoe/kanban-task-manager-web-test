@@ -21,6 +21,7 @@ export default defineConfig({
       '@types': new URL('./src/types', import.meta.url).pathname,
       '@routes': new URL('./src/routes', import.meta.url).pathname,
       '@data': new URL('./src/data', import.meta.url).pathname,
+      '@store': new URL('./src/store', import.meta.url).pathname,
     },
   },
 });

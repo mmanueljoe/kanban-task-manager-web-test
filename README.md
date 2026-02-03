@@ -1,98 +1,68 @@
 # Kanban Task Management Web App
 
-This extends the kanban task manager to include real board and column management, context-based state, and a bunch of small UX touches, all built with **React**, **TypeScript**, and **Vite**. The project still focuses on **routing and navigation**, **handling incorrect routes gracefully**, and **implementing protected routes**, but now it feels much closer to a real app.
+A Kanban-style task manager built with **React**, **TypeScript**, and **Vite** where **all shared state lives in a single Zustand store**. The project focuses on **global state architecture**, **drag-and-drop task movement**, **protected routing**, and **small but meaningful UX improvements**.
 
-## Project focus
+## What I implemented
 
-### Kanban boards and state
+### 1. Single global store with Zustand
 
-- **Boards, columns, and tasks**: The app now has real Kanban data instead of a static demo. Boards contain columns, columns contain tasks, and everything is wired through a central `BoardsContext` + `boardsReducer`.
-- **Create and edit flows**: You can add/edit boards, columns, and tasks via modals (`AddBoard`, `EditBoard`, `AddColumn`, `AddTask`, `EditTask`, `TaskDetails`). State updates in one place and the UI reflects it everywhere.
-- **Task details and subtasks**: A dedicated task details modal lets you see the full description, move tasks between columns, and toggle subtasks.
+- **Everything in one store**: Boards (columns + tasks), theme, auth, loading keys, and toasts all live in `useStore`, backed by the existing `boardsReducer`.
+- **No more heavy providers**: React Context providers for boards, auth, and theme were removed; components now read from the store via hooks like `useBoards`, `useTheme`, `useAuth`, and `useUi`.
+- **Persistence and hydration**: Boards are hydrated and persisted with a dedicated `StoreHydration` component and a selector-based subscription so only real board changes hit `localStorage`.
+- **UI loading behavior kept clean**: A thin `UiProvider` keeps only refs/timers needed for “minimum 300ms” loading while the actual `loadingKeys` and `toasts` live in the store.
 
-### UI / UX layer
+For a deeper walkthrough, see [`docs/GLOBAL-STORE-IMPLEMENTATION.md`](docs/GLOBAL-STORE-IMPLEMENTATION.md) and [`docs/ALL-STATE-AND-DRAG-AND-DROP.md`](docs/ALL-STATE-AND-DRAG-AND-DROP.md).
 
-- **UI state management**: A `UiContext` keeps track of which modal is open, which board/task is selected, and handles global UI bits like the loading overlay and toast notifications.
-- **Shared layout and theming**: The main layout (header + sidebar) is shared across pages, with a theme toggle driven by `ThemeContext` so light/dark mode feels consistent.
+### 2. Real Kanban boards, creation flow, and drag-and-drop
 
-### Routing and auth
+- **Boards, columns, and tasks**: The app uses real Kanban data—boards contain columns, columns contain tasks—and all updates go through the central reducer and store.
+- **Create/edit flows**: Modals for adding and editing boards, columns, and tasks (`AddBoardModal`, `EditBoardModal`, `AddColumnModal`, `AddTaskModal`, `EditTaskModal`, `TaskDetailsModal`) all dispatch actions into the global store.
+- **New board creation**: A dedicated `AddBoardModal` powers “Create New Board” from both the sidebar and header; on submit it dispatches `ADD_BOARD` and navigates to the new board route.
+- **Drag-and-drop tasks**: Using `@dnd-kit`, tasks are draggable and columns are droppable; dropping a task simply dispatches the existing `MOVE_TASK` action so the store remains the single source of truth.
+- **Empty states that actually work**: The empty-board “+ Add New Column” CTA now opens the real column modal instead of being a dead button.
 
-- **Central route config**: Routes live in `RouteProvider`, using nested routes so the main layout wraps dashboard, board view, and admin while login/404 stay outside.
-- **Graceful error routes**: Unknown URLs go to a friendly 404 page, and invalid board IDs are handled inside `BoardView` with a “Board not found” message and a way back.
-- **Protected routes**: `ProtectedRoute` guards the board and admin views using `AuthContext`; unauthenticated users are redirected to `/login`.
+The DnD and “all state in the store” decisions are described in [`docs/ALL-STATE-AND-DRAG-AND-DROP.md`](docs/ALL-STATE-AND-DRAG-AND-DROP.md).
 
-## Screenshots
+### 3. Routing and auth wired to the store
 
-Run `yarn dev` and capture the following screens. Save images into `docs/screenshots/` (see [docs/screenshots/README.txt](docs/screenshots/README.txt) for the list).
+- **Central route config**: `RouteProvider` owns all routes and splits layout vs non-layout pages (dashboard/board/admin vs login/404).
+- **Protected routes**: `ProtectedRoute` now relies on store-based auth (`useAuth`) to guard sensitive pages (like `/admin`) and redirect unauthenticated users to `/login`.
+- **Robust bad-route handling**:
+  - A catch-all `*` route renders a friendly 404.
+  - `BoardView` validates the `boardId` route param and renders a “Board not found” state when the ID is invalid, with a clear way back.
+- **Delete-board flow that respects routing**: Deleting a board updates the store and navigates back to the dashboard so the URL, state, and UI stay in sync.
 
-### Dashboard
+Routing details live in [`docs/ROUTING-AND-STRUCTURE.md`](docs/ROUTING-AND-STRUCTURE.md).
 
-![Dashboard](docs/screenshots/dashboard.png)
+### 4. Frontend UX and component improvements
 
-_Route: `/` — List of boards and entry to the app._
+- **Validation that doesn’t fight the user**: Add-task and add-column modals keep the dialog open and preserve form values on validation errors, while surfacing issues via toasts.
+- **Reusable `ThemeToggle`**: A shared `ThemeToggle` component powers theme switching in both the header and sidebar, wired into the global theme slice.
+- **Shared `useCurrentBoard` selector hook**: All “current board” consumers (layout, header, board view) use a single hook that translates the route param into `{ board, boardIndex }`, so changing how boards are addressed later is a one-file change.
+- **Consistent loading and toast experience**: A global loading overlay and toast host read from the store’s UI slice, giving consistent feedback across routes and flows.
 
-### Board view
+These changes are summarized in [`docs/FRONTEND-IMPROVEMENTS.md`](docs/FRONTEND-IMPROVEMENTS.md).
 
-![Board view](docs/screenshots/board-view.png)
+### 5. Tooling and project setup
 
-_Route: `/board/0` — Kanban board with columns and tasks (protected)._
+- **Modern Vite + React + TS setup** using the latest Vite template.
+- **ESLint (flat config) + Prettier + Husky + lint-staged**:
+  - `yarn lint`, `yarn lint:fix`, and `yarn format` scripts.
+  - A pre-commit hook that formats and lints staged files.
+- **Type-safe store and reducers**: Shared types live in `src/types/types.ts` and are reused by the store, reducer, and components.
 
-### Login
+The setup decisions and troubleshooting notes are captured in [`docs/SETUP-GUIDE.md`](docs/SETUP-GUIDE.md).
 
-![Login](docs/screenshots/login.png)
+## Tech stack
 
-_Route: `/login` — Mock login; after submit, redirects to Dashboard._
+- **Framework**: React + TypeScript
+- **State management**: Zustand (single global store + reducer)
+- **Routing**: React Router
+- **Drag-and-drop**: `@dnd-kit/core`
+- **Build tool**: Vite
+- **Styling**: CSS modules/tokens and utility classes, with Tailwind available in the toolchain
 
-### Admin (protected)
-
-![Admin](docs/screenshots/admin.png)
-
-_Route: `/admin` — Protected page; redirects to Login when not logged in._
-
-### 404 – Page not found
-
-![Not found](docs/screenshots/not-found.png)
-
-_Route: any unknown path (e.g. `/unknown-path`) — Catch-all route._
-
-### Board not found
-
-![Board not found](docs/screenshots/board-not-found.png)
-
-_Route: e.g. `/board/999` or `/board/abc` — Invalid board ID handled inside BoardView._
-
-## What I built
-
-This iteration turned the original routing-focused demo into a more complete Kanban task manager. I added proper board and column management with context-based state, built out modals for creating and editing tasks/columns/boards, and wired everything up to feel like a real app instead of a static example.
-
-Under the hood, I introduced `BoardsContext` and `UiContext` so the board data and UI state (modals, toasts, loading overlays) are managed in a single place and stay in sync across pages. I also refined the layout, improved the theme/auth contexts, and tightened up types to make the codebase easier to extend.
-
-## Lessons learnt
-
-- **Centralized routes**: Defining all routes in one component ([RouteProvider](src/routes/RouteProvider.tsx)) keeps layout and auth decisions in one place and makes the app structure easy to follow.
-- **Protected routes as a wrapper**: Using a `<ProtectedRoute>` wrapper keeps the route config declarative: wrap the component that needs auth; no extra logic inside the page.
-- **Two kinds of “wrong” routes**: A catch-all `*` route handles unknown paths; validating params inside a page (e.g. board ID in BoardView) handles invalid resource IDs. Together they cover both cases without leaving users on a broken screen.
-- **Auth context + persistence**: [AuthContext](src/context/AuthContext.tsx) holds login state; [localStorage](src/utils/localStorage.ts) persists it so redirects and “logged in” state survive refresh.
-
-## Concepts to improve
-
-- **Real authentication**: Replace mock login with a backend (e.g. JWT, session cookies) and proper sign-in/sign-out flows.
-- **Role-based access**: Extend protected routes with roles (e.g. admin-only routes) and permission checks.
-- **Route-level code splitting**: Use `React.lazy` and `Suspense` per route to reduce initial bundle size.
-- **Error boundaries**: Add route-level or app-level error boundaries so runtime errors show a fallback UI instead of a blank screen.
-- **Accessibility**: Improve focus management, ARIA labels, and keyboard navigation, especially in modals and dynamic content.
-- **Testing**: Add tests for routing (e.g. correct component per URL), protected route redirect, and NotFound/board-not-found behavior.
-
-## Areas to improve
-
-- **Loading and skeletons**: Add loading states or skeleton UIs for boards and tasks instead of rendering raw data immediately.
-- **Data source**: Replace static [data.json](src/data/data.json) with an API (REST or GraphQL) and handle loading/error states.
-- **Forms**: Add validation and clear error messages on login and other forms.
-- **Responsive and polish**: Refine layout and interactions on small screens and touch devices.
-- **SEO and meta**: Set per-route meta tags (e.g. title, description) for better sharing and SEO.
-- **CI**: Run lint and tests (e.g. Vitest, React Testing Library) in CI on push or PR.
-
-## Quick start
+## Running the project
 
 ```bash
 # Install dependencies
@@ -102,8 +72,4 @@ yarn
 yarn dev
 ```
 
-See [docs/SETUP-GUIDE.md](docs/SETUP-GUIDE.md) for more setup details. For routing and file structure, see [docs/ROUTING-AND-STRUCTURE.md](docs/ROUTING-AND-STRUCTURE.md).
-
-## Expanding the ESLint configuration
-
-This project uses the default Vite + React + TypeScript ESLint setup. For production apps, you may want to enable type-aware lint rules or extra React plugins. See [Vite’s ESLint documentation](https://vite.dev/guide/features.html#eslint) and the [TypeScript ESLint docs](https://typescript-eslint.io/) for options.
+For more details about structure, setup, and labs, check the docs under `docs/`.

@@ -1,17 +1,18 @@
-import { Link, useParams } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 import { useRef, useState, useEffect } from 'react';
-import { useTheme } from '@hooks/useTheme';
 import { useBoards } from '@/hooks/useBoards';
+import { useCurrentBoard } from '@/hooks/useCurrentBoard';
+import { useAuth } from '@/hooks/useAuth';
+import { ThemeToggle } from '@components/ui/ThemeToggle';
 import logoMobile from '@assets/logo-mobile.svg';
 import iconChevronDown from '@assets/icon-chevron-down.svg';
 import iconAddTask from '@assets/icon-add-task-mobile.svg';
 import iconEllipsis from '@assets/icon-vertical-ellipsis.svg';
 import iconBoard from '@assets/icon-board.svg';
-import iconLight from '@assets/icon-light-theme.svg';
-import iconDark from '@assets/icon-dark-theme.svg';
 
 type HeaderProps = {
   onAddTask?: () => void;
+  onCreateBoard?: () => void;
   onEditBoard?: () => void;
   onDeleteBoard?: () => void;
   canEditBoard?: boolean;
@@ -19,38 +20,49 @@ type HeaderProps = {
 
 export function Header({
   onAddTask,
+  onCreateBoard,
   onEditBoard,
   onDeleteBoard,
   canEditBoard = false,
 }: HeaderProps) {
   const { boards } = useBoards();
-  const { boardId } = useParams<{ boardId?: string }>();
-  const { theme, setTheme } = useTheme();
+  const { board, boardIndex } = useCurrentBoard();
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+  const accountMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!menuOpen) return;
+    if (!menuOpen && !accountMenuOpen) return;
     function handleClickOutside(e: MouseEvent) {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setMenuOpen(false);
+      const target = e.target as Node;
+      if (menuRef.current && menuRef.current.contains(target)) return;
+      if (accountMenuRef.current && accountMenuRef.current.contains(target)) {
+        return;
       }
+      setMenuOpen(false);
+      setAccountMenuOpen(false);
     }
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [menuOpen]);
+  }, [menuOpen, accountMenuOpen]);
 
-  const currentIndex =
-    boardId != null && /^\d+$/.test(boardId) ? parseInt(boardId, 10) : null;
   const currentBoardName =
-    currentIndex != null &&
-    Number.isFinite(currentIndex) &&
-    currentIndex >= 0 &&
-    currentIndex < boards.length
-      ? boards[currentIndex].name
-      : 'Boards';
+    board != null && boardIndex != null ? board.name : 'Boards';
+
+  const handleLogout = () => {
+    logout();
+    void navigate('/login', { replace: true });
+  };
+
+  const userInitial =
+    user?.name?.trim()?.charAt(0).toUpperCase() ??
+    user?.email?.trim()?.charAt(0).toUpperCase() ??
+    'A';
 
   useEffect(() => {
     if (!dropdownOpen) return;
@@ -126,7 +138,7 @@ export function Header({
                   <li key={board.name}>
                     <Link
                       to={`/board/${index}`}
-                      className={`app-board-dropdown-item ${currentIndex === index ? 'active' : ''}`}
+                      className={`app-board-dropdown-item ${boardIndex === index ? 'active' : ''}`}
                       onClick={() => setDropdownOpen(false)}
                     >
                       <img
@@ -138,7 +150,7 @@ export function Header({
                           display: 'inline-block',
                           marginRight: 12,
                           verticalAlign: 'middle',
-                          opacity: currentIndex === index ? 1 : 0.5,
+                          opacity: boardIndex === index ? 1 : 0.5,
                         }}
                       />
                       {board.name}
@@ -149,7 +161,10 @@ export function Header({
                   <button
                     type="button"
                     className="app-board-dropdown-item create"
-                    onClick={() => setDropdownOpen(false)}
+                    onClick={() => {
+                      onCreateBoard?.();
+                      setDropdownOpen(false);
+                    }}
                   >
                     <img
                       src={iconBoard}
@@ -167,16 +182,7 @@ export function Header({
                   </button>
                 </li>
               </ul>
-              <div className="app-board-dropdown-theme">
-                <img src={iconLight} alt="" width={18} height={18} />
-                <button
-                  type="button"
-                  className="app-board-dropdown-toggle"
-                  onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
-                  aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} theme`}
-                />
-                <img src={iconDark} alt="" width={18} height={18} />
-              </div>
+              <ThemeToggle className="app-board-dropdown-theme" />
             </div>
           </div>
         )}
@@ -198,6 +204,84 @@ export function Header({
           />
           <span className="app-header-add-label">+ Add New Task</span>
         </button>
+        <div ref={accountMenuRef} style={{ position: 'relative' }}>
+          <button
+            type="button"
+            aria-label="Account menu"
+            aria-expanded={accountMenuOpen}
+            aria-haspopup="true"
+            onClick={() => setAccountMenuOpen((open) => !open)}
+            style={{
+              width: 32,
+              height: 32,
+              borderRadius: 999,
+              border: '1px solid var(--lines)',
+              background: 'var(--bg-main)',
+              color: 'var(--text-primary)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: 13,
+              fontWeight: 700,
+              cursor: 'pointer',
+              marginRight: 4,
+            }}
+          >
+            {userInitial}
+          </button>
+          {accountMenuOpen && (
+            <div
+              role="menu"
+              style={{
+                position: 'absolute',
+                top: '100%',
+                right: 0,
+                marginTop: 8,
+                minWidth: 160,
+                padding: 8,
+                borderRadius: 8,
+                background: 'var(--bg-main)',
+                border: '1px solid var(--lines)',
+                boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)',
+                zIndex: 20,
+              }}
+            >
+              <button
+                type="button"
+                role="menuitem"
+                className="dropdown-option"
+                style={{
+                  display: 'block',
+                  width: '100%',
+                  textAlign: 'left',
+                }}
+                onClick={() => {
+                  setAccountMenuOpen(false);
+                  void navigate('/admin');
+                }}
+              >
+                Admin
+              </button>
+              <button
+                type="button"
+                role="menuitem"
+                className="dropdown-option"
+                style={{
+                  display: 'block',
+                  width: '100%',
+                  textAlign: 'left',
+                  color: 'var(--destructive)',
+                }}
+                onClick={() => {
+                  setAccountMenuOpen(false);
+                  handleLogout();
+                }}
+              >
+                Log out
+              </button>
+            </div>
+          )}
+        </div>
         <div ref={menuRef} style={{ position: 'relative' }}>
           <button
             type="button"

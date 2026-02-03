@@ -18,7 +18,8 @@
       "@context/*": ["./src/context/*"],
       "@types/*": ["./src/types/*"],
       "@routes/*": ["./src/routes/*"],
-      "@data/*": ["./src/data/*"]
+      "@data/*": ["./src/data/*"],
+      "@store/*": ["./src/store/*"]
     }
   }
 }

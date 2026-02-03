@@ -1,9 +1,14 @@
 import type { AuthContextType } from '@/types/types';
-import { authContext } from '@context/AuthContext';
-import { useContext } from 'react';
+import { useStore } from '@/store/useStore';
+import { useShallow } from 'zustand/react/shallow';
 
 export function useAuth(): AuthContextType {
-  const ctx = useContext(authContext);
-  if (!ctx) throw new Error('useAuth must be used inside AuthProvider');
-  return ctx;
+  return useStore(
+    useShallow((state) => ({
+      user: state.user,
+      isLoggedIn: state.isLoggedIn,
+      login: state.login,
+      logout: state.logout,
+    }))
+  );
 }

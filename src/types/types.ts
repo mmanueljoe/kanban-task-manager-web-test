@@ -111,7 +111,6 @@ export type BoardsAction =
       payload: { boardIndex: number; columnName: string };
     };
 
-// UI feedback (loading + toasts)
 export type UiToast = {
   id: string;
   type: 'success' | 'error' | 'info';
@@ -123,17 +122,11 @@ export type UiState = {
   toasts: UiToast[];
 };
 
-export type UiAction =
-  | { type: 'START_LOADING'; payload: { key: string } }
-  | { type: 'STOP_LOADING'; payload: { key: string } }
-  | { type: 'SHOW_TOAST'; payload: UiToast }
-  | { type: 'DISMISS_TOAST'; payload: { id: string } };
-
 export type UiContextType = {
   state: UiState;
-  dispatch: React.Dispatch<UiAction>;
   showToast: (params: Omit<UiToast, 'id'>) => void;
   startLoading: (key: string) => void;
   stopLoading: (key: string) => void;
   isLoading: (key?: string) => boolean;
+  dismissToast: (id: string) => void;
 };

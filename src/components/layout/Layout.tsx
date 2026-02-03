@@ -1,30 +1,24 @@
 import { useState } from 'react';
-import { Outlet, useParams } from 'react-router';
+import { Outlet, useNavigate } from 'react-router';
 import { Header } from '@components/layout/Header';
 import { Aside } from '@components/layout/Aside';
 import { AddTaskModal } from '@components/modals/AddTaskModal';
 import { EditBoardModal } from '@components/modals/EditBoardModal';
 import { DeleteBoardModal } from '@components/modals/DeleteBoardModal';
-import { useBoards } from '@/hooks/useBoards';
+import { AddBoardModal } from '@components/modals/AddBoardModal';
+import { useCurrentBoard } from '@/hooks/useCurrentBoard';
 import iconShowSidebar from '@assets/icon-show-sidebar.svg';
 
 export function Layout() {
-  const { boards } = useBoards();
-  const { boardId } = useParams<{ boardId?: string }>();
+  const { board, boardIndex } = useCurrentBoard();
   const [addTaskOpen, setAddTaskOpen] = useState(false);
+  const [addBoardOpen, setAddBoardOpen] = useState(false);
   const [editBoardOpen, setEditBoardOpen] = useState(false);
   const [deleteBoardOpen, setDeleteBoardOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const navigate = useNavigate();
 
-  const boardIndex =
-    boardId != null && /^\d+$/.test(boardId) ? parseInt(boardId, 10) : null;
-  const currentBoard =
-    boardIndex != null &&
-    Number.isFinite(boardIndex) &&
-    boardIndex >= 0 &&
-    boardIndex < boards.length
-      ? boards[boardIndex]
-      : null;
+  const currentBoard = board;
 
   const columnOptions =
     currentBoard?.columns.map((c) => ({ value: c.name, label: c.name })) ?? [];
@@ -34,7 +28,10 @@ export function Layout() {
       className={`app-layout ${sidebarOpen ? '' : 'app-sidebar-hidden'}`}
       data-sidebar-open={sidebarOpen}
     >
-      <Aside onHideSidebar={() => setSidebarOpen(false)} />
+      <Aside
+        onHideSidebar={() => setSidebarOpen(false)}
+        onCreateBoard={() => setAddBoardOpen(true)}
+      />
       <button
         type="button"
         className="app-show-sidebar-tab"
@@ -46,6 +43,7 @@ export function Layout() {
       <div className="app-layout-right">
         <Header
           onAddTask={() => setAddTaskOpen(true)}
+          onCreateBoard={() => setAddBoardOpen(true)}
           onEditBoard={() => setEditBoardOpen(true)}
           onDeleteBoard={() => setDeleteBoardOpen(true)}
           canEditBoard={currentBoard != null}
@@ -54,6 +52,10 @@ export function Layout() {
           <Outlet />
         </main>
       </div>
+      <AddBoardModal
+        open={addBoardOpen}
+        onClose={() => setAddBoardOpen(false)}
+      />
       <AddTaskModal
         open={addTaskOpen}
         onClose={() => setAddTaskOpen(false)}
@@ -77,7 +79,9 @@ export function Layout() {
           <DeleteBoardModal
             open={deleteBoardOpen}
             onClose={() => setDeleteBoardOpen(false)}
-            onConfirm={() => {}}
+            onConfirm={() => {
+              void navigate('/', { replace: true });
+            }}
             boardName={currentBoard.name}
             boardIndex={boardIndex}
           />

@@ -1,21 +1,19 @@
 import { Link, useLocation } from 'react-router';
-import { useTheme } from '@hooks/useTheme';
 import { useBoards } from '@/hooks/useBoards';
+import { ThemeToggle } from '@components/ui/ThemeToggle';
 
 import iconBoard from '@assets/icon-board.svg';
-import iconLight from '@assets/icon-light-theme.svg';
-import iconDark from '@assets/icon-dark-theme.svg';
 import iconHideSidebar from '@assets/icon-hide-sidebar.svg';
 import logoMobile from '@assets/logo-mobile.svg';
 
 type AsideProps = {
   onHideSidebar: () => void;
+  onCreateBoard: () => void;
 };
 
-export function Aside({ onHideSidebar }: AsideProps) {
+export function Aside({ onHideSidebar, onCreateBoard }: AsideProps) {
   const location = useLocation();
   const { boards } = useBoards();
-  const { theme, setTheme } = useTheme();
 
   return (
     <aside className="app-aside">
@@ -40,22 +38,17 @@ export function Aside({ onHideSidebar }: AsideProps) {
             {board.name}
           </Link>
         ))}
-        <Link to="/" className="app-aside-link create">
+        <button
+          type="button"
+          className="app-aside-link create"
+          onClick={onCreateBoard}
+        >
           <img src={iconBoard} alt="" width={16} height={16} aria-hidden />+
           Create New Board
-        </Link>
+        </button>
       </nav>
       <div className="app-aside-footer">
-        <div className="app-aside-theme">
-          <img src={iconLight} alt="" width={18} height={18} aria-hidden />
-          <button
-            type="button"
-            className="app-board-dropdown-toggle"
-            onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
-            aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} theme`}
-          />
-          <img src={iconDark} alt="" width={18} height={18} aria-hidden />
-        </div>
+        <ThemeToggle className="app-aside-theme" />
         <button
           type="button"
           className="app-aside-hide"

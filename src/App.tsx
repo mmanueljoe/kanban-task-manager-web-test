@@ -1,21 +1,18 @@
-import { ThemeProvider } from '@context/ThemeContext';
-import { AuthProvider } from '@context/AuthContext';
 import { RouteProvider } from '@routes/RouteProvider';
 import { useTheme } from '@hooks/useTheme';
-import { BoardsProvider } from '@context/BoardsContext';
 import { UiProvider } from '@context/UiContext';
+import { StoreHydration } from '@store/StoreHydration';
 import { ToastHost } from '@components/ui/ToastHost';
 import { LoadingOverlay } from '@components/ui/LoadingOverlay';
+
 function AppContent() {
   const { theme } = useTheme();
   return (
     <div data-theme={theme} className="app-root">
       <UiProvider>
-        <AuthProvider>
-          <BoardsProvider>
-            <RouteProvider />
-          </BoardsProvider>
-        </AuthProvider>
+        <StoreHydration>
+          <RouteProvider />
+        </StoreHydration>
         <LoadingOverlay />
         <ToastHost />
       </UiProvider>
@@ -24,9 +21,5 @@ function AppContent() {
 }
 
 export default function App() {
-  return (
-    <ThemeProvider>
-      <AppContent />
-    </ThemeProvider>
-  );
+  return <AppContent />;
 }

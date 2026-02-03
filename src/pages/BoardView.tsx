@@ -1,10 +1,20 @@
-import { Link, useParams } from 'react-router';
+import { Link } from 'react-router';
 import { useBoards } from '@/hooks/useBoards';
+import { useCurrentBoard } from '@/hooks/useCurrentBoard';
 import { Button } from '@components/ui/Button';
-import type { Board, Task } from '@/types/types';
+import type { Task } from '@/types/types';
 import { useCallback, useState } from 'react';
 import { TaskDetailsModal } from '@components/modals/TaskDetailsModal';
 import { AddColumnModal } from '@components/modals/AddColumnModal';
+import {
+  DndContext,
+  type DragEndEvent,
+  useDraggable,
+  useDroppable,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core';
 
 const COLUMN_DOT_COLORS = [
   '#49C4E5',
@@ -14,9 +24,113 @@ const COLUMN_DOT_COLORS = [
   '#2A3FDB',
 ];
 
+/** Encode draggable id: boardIndex::columnName::taskTitle (taskTitle may contain ::) */
+function encodeTaskId(
+  boardIndex: number,
+  columnName: string,
+  taskTitle: string
+) {
+  return `${boardIndex}::${columnName}::${taskTitle}`;
+}
+function decodeTaskId(
+  id: string
+): { boardIndex: number; columnName: string; taskTitle: string } | null {
+  const parts = id.split('::');
+  if (parts.length < 3) return null;
+  return {
+    boardIndex: parseInt(parts[0], 10),
+    columnName: parts[1],
+    taskTitle: parts.slice(2).join('::'),
+  };
+}
+/** Encode droppable column id: boardIndex::columnName */
+function encodeColumnId(boardIndex: number, columnName: string) {
+  return `${boardIndex}::${columnName}`;
+}
+function decodeColumnId(
+  id: string
+): { boardIndex: number; columnName: string } | null {
+  const parts = id.split('::');
+  if (parts.length < 2) return null;
+  return { boardIndex: parseInt(parts[0], 10), columnName: parts[1] };
+}
+
+/** UPDATED: Draggable task card. Id encodes boardIndex, column, taskTitle so we can dispatch MOVE_TASK on drop. */
+function DraggableTask({
+  boardIndex,
+  columnName,
+  task,
+  subtaskSummary,
+  onOpenDetails,
+}: {
+  boardIndex: number;
+  columnName: string;
+  task: Task;
+  subtaskSummary: (t: Task) => string;
+  onOpenDetails: () => void;
+}) {
+  const id = encodeTaskId(boardIndex, columnName, task.title);
+  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
+    id,
+  });
+  return (
+    <li
+      ref={setNodeRef}
+      className="app-board-task"
+      style={{ opacity: isDragging ? 0.5 : 1 }}
+      onClick={onOpenDetails}
+      {...listeners}
+      {...attributes}
+    >
+      <p className="app-board-task-title">{task.title}</p>
+      <p className="app-board-task-subtasks">{subtaskSummary(task)}</p>
+    </li>
+  );
+}
+
+/** UPDATED: Droppable column. Id encodes boardIndex and columnName so we know where the task was dropped. */
+function DroppableColumn({
+  boardIndex,
+  columnName,
+  columnIndex,
+  taskCount,
+  children,
+}: {
+  boardIndex: number;
+  columnName: string;
+  columnIndex: number;
+  taskCount: number;
+  children: React.ReactNode;
+}) {
+  const id = encodeColumnId(boardIndex, columnName);
+  const { setNodeRef, isOver } = useDroppable({ id });
+  return (
+    <section
+      ref={setNodeRef}
+      className="app-board-column"
+      style={{
+        outline: isOver ? '2px dashed var(--accent, #635FC7)' : undefined,
+        outlineOffset: 4,
+      }}
+    >
+      <div className="app-board-column-header">
+        <span
+          className="app-board-column-dot"
+          style={{
+            backgroundColor:
+              COLUMN_DOT_COLORS[columnIndex % COLUMN_DOT_COLORS.length],
+          }}
+        />
+        <h2 className="app-board-column-title">
+          {columnName} ({taskCount})
+        </h2>
+      </div>
+      <ul className="app-board-tasks">{children}</ul>
+    </section>
+  );
+}
+
 export function BoardView() {
-  const { boardId } = useParams<{ boardId: string }>();
-  const index = boardId != null ? parseInt(boardId, 10) : NaN;
   const [selectedTask, setSelectedTask] = useState<{
     boardIndex: number | null;
     columnName: string | null;
@@ -24,19 +138,42 @@ export function BoardView() {
   } | null>(null);
   const [taskModalOpen, setTaskModalOpen] = useState(false);
   const [addColumnOpen, setAddColumnOpen] = useState(false);
-  const { boards, dispatch } = useBoards();
-  const boardIndex =
-    Number.isFinite(index) && index >= 0 && index < boards.length
-      ? index
-      : null;
-
-  const board: Board | null = boardIndex !== null ? boards[boardIndex] : null;
+  const { dispatch } = useBoards();
+  const { board, boardIndex } = useCurrentBoard();
 
   const subtaskSummary = useCallback((task: Task): string => {
     const total = task.subtasks?.length ?? 0;
     const done = task.subtasks?.filter((s) => s.isCompleted).length ?? 0;
     return `${done} of ${total} substask${total !== 1 ? 's' : ''}`;
   }, []);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
+  );
+
+  const handleDragEnd = useCallback(
+    (event: DragEndEvent) => {
+      const { active, over } = event;
+      if (boardIndex === null || !over) return;
+      const taskData = decodeTaskId(String(active.id));
+      const columnData = decodeColumnId(String(over.id));
+      if (
+        !taskData ||
+        !columnData ||
+        taskData.boardIndex !== boardIndex ||
+        columnData.boardIndex !== boardIndex
+      )
+        return;
+      const { columnName: fromColumn, taskTitle } = taskData;
+      const toColumn = columnData.columnName;
+      if (fromColumn === toColumn) return;
+      dispatch({
+        type: 'MOVE_TASK',
+        payload: { boardIndex, fromColumn, toColumn, taskTitle },
+      });
+    },
+    [boardIndex, dispatch]
+  );
 
   if (!board) {
     return (
@@ -62,38 +199,45 @@ export function BoardView() {
           <p className="body-l" style={{ marginBottom: 24 }}>
             Create a new column to get started.
           </p>
-          <Button variant="primary" size="large">
+          <Button
+            variant="primary"
+            size="large"
+            onClick={() => setAddColumnOpen(true)}
+          >
             + Add New Column
           </Button>
         </div>
+        {addColumnOpen && (
+          <AddColumnModal
+            open={addColumnOpen}
+            onClose={() => setAddColumnOpen(false)}
+            boardIndex={boardIndex}
+          />
+        )}
       </div>
     );
   }
 
   return (
     <div className="app-main app-main-board">
-      <div className="app-board-columns">
-        {board.columns.map((col, colIndex) => (
-          <section key={col.name} className="app-board-column">
-            <div className="app-board-column-header">
-              <span
-                className="app-board-column-dot"
-                style={{
-                  backgroundColor:
-                    COLUMN_DOT_COLORS[colIndex % COLUMN_DOT_COLORS.length],
-                }}
-              />
-              <h2 className="app-board-column-title">
-                {col.name} ({col.tasks.length})
-              </h2>
-            </div>
-            <ul className="app-board-tasks">
+      <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+        <div className="app-board-columns">
+          {board.columns.map((col, colIndex) => (
+            <DroppableColumn
+              key={col.name}
+              boardIndex={boardIndex!}
+              columnName={col.name}
+              columnIndex={colIndex}
+              taskCount={col.tasks.length}
+            >
               {col.tasks.map((task) => (
-                <li
+                <DraggableTask
                   key={task.title}
-                  className="app-board-task"
-                  onClick={() => {
-                    if (boardIndex === null) return;
+                  boardIndex={boardIndex!}
+                  columnName={col.name}
+                  task={task}
+                  subtaskSummary={subtaskSummary}
+                  onOpenDetails={() => {
                     setSelectedTask({
                       boardIndex,
                       columnName: col.name,
@@ -101,48 +245,20 @@ export function BoardView() {
                     });
                     setTaskModalOpen(true);
                   }}
-                >
-                  <p className="app-board-task-title">{task.title}</p>
-                  <p className="app-board-task-subtasks">
-                    {subtaskSummary(task)}
-                  </p>
-                  {boardIndex !== null &&
-                    colIndex < board.columns.length - 1 && (
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          const fromColumn = col.name;
-                          const toColumn = board.columns[colIndex + 1].name;
-                          dispatch({
-                            type: 'MOVE_TASK',
-                            payload: {
-                              boardIndex,
-                              fromColumn,
-                              toColumn,
-                              taskTitle: task.title,
-                            },
-                          });
-                        }}
-                        className="btn btn-secondary btn-small"
-                      >
-                        Move to {board.columns[colIndex + 1].name}
-                      </button>
-                    )}
-                </li>
+                />
               ))}
-            </ul>
-          </section>
-        ))}
-        <button
-          type="button"
-          className="app-board-new-column"
-          aria-label="Add new column"
-          onClick={() => setAddColumnOpen(true)}
-        >
-          + New Column
-        </button>
-      </div>
+            </DroppableColumn>
+          ))}
+          <button
+            type="button"
+            className="app-board-new-column"
+            aria-label="Add new column"
+            onClick={() => setAddColumnOpen(true)}
+          >
+            + New Column
+          </button>
+        </div>
+      </DndContext>
 
       {selectedTask && (
         <TaskDetailsModal

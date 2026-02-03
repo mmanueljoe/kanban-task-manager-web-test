@@ -9,14 +9,14 @@ type ToastProps = {
 };
 
 function Toast({ toast }: ToastProps) {
-  const { dispatch } = useUi();
+  const { dismissToast } = useUi();
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
-      dispatch({ type: 'DISMISS_TOAST', payload: { id: toast.id } });
+      dismissToast(toast.id);
     }, AUTO_DISMISS_MS);
     return () => window.clearTimeout(timer);
-  }, [dispatch, toast.id]);
+  }, [dismissToast, toast.id]);
 
   const background =
     toast.type === 'success'
@@ -55,9 +55,7 @@ function Toast({ toast }: ToastProps) {
       <button
         type="button"
         aria-label="Dismiss notification"
-        onClick={() =>
-          dispatch({ type: 'DISMISS_TOAST', payload: { id: toast.id } })
-        }
+        onClick={() => dismissToast(toast.id)}
         style={{
           border: 'none',
           background: 'transparent',

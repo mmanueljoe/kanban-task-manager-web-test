@@ -1,5 +1,5 @@
 import { useContext } from 'react';
-import { uiContext } from '@context/UiContext';
+import { uiContext } from '@context/ui-context';
 import type { UiContextType } from '@/types/types';
 
 export function useUi(): UiContextType {

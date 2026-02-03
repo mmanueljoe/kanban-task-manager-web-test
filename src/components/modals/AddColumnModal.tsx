@@ -26,7 +26,6 @@ export function AddColumnModal({
         type: 'error',
         message: 'Please provide a name for the new column.',
       });
-      onClose();
       return;
     }
 
