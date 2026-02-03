@@ -87,6 +87,45 @@ export function boardsReducer(
             : board
         ),
       };
+    case 'REORDER_TASK': {
+      const { boardIndex, columnName, fromIndex, toIndex } = action.payload;
+
+      if (fromIndex === toIndex) {
+        return state;
+      }
+
+      return {
+        ...state,
+        boards: state.boards.map((board, index) => {
+          if (index !== boardIndex) return board;
+
+          return {
+            ...board,
+            columns: board.columns.map((column) => {
+              if (column.name !== columnName) return column;
+
+              const tasks = [...column.tasks];
+              if (
+                fromIndex < 0 ||
+                fromIndex >= tasks.length ||
+                toIndex < 0 ||
+                toIndex >= tasks.length
+              ) {
+                return column;
+              }
+
+              const [moved] = tasks.splice(fromIndex, 1);
+              tasks.splice(toIndex, 0, moved);
+
+              return {
+                ...column,
+                tasks,
+              };
+            }),
+          };
+        }),
+      };
+    }
     case 'MOVE_TASK': {
       const { boardIndex, fromColumn, toColumn, taskTitle } = action.payload;
 

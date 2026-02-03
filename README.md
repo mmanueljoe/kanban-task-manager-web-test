@@ -18,7 +18,7 @@ For a deeper walkthrough, see [`docs/GLOBAL-STORE-IMPLEMENTATION.md`](docs/GLOBA
 - **Boards, columns, and tasks**: The app uses real Kanban data—boards contain columns, columns contain tasks—and all updates go through the central reducer and store.
 - **Create/edit flows**: Modals for adding and editing boards, columns, and tasks (`AddBoardModal`, `EditBoardModal`, `AddColumnModal`, `AddTaskModal`, `EditTaskModal`, `TaskDetailsModal`) all dispatch actions into the global store.
 - **New board creation**: A dedicated `AddBoardModal` powers “Create New Board” from both the sidebar and header; on submit it dispatches `ADD_BOARD` and navigates to the new board route.
-- **Drag-and-drop tasks**: Using `@dnd-kit`, tasks are draggable and columns are droppable; dropping a task simply dispatches the existing `MOVE_TASK` action so the store remains the single source of truth.
+- **Drag-and-drop tasks**: Using `@dnd-kit`, tasks are draggable and columns are droppable; dropping a task either reorders within a column via `REORDER_TASK` or moves the task across columns via `MOVE_TASK`, keeping the reducer and store as the single source of truth.
 - **Empty states that actually work**: The empty-board “+ Add New Column” CTA now opens the real column modal instead of being a dead button.
 
 The DnD and “all state in the store” decisions are described in [`docs/ALL-STATE-AND-DRAG-AND-DROP.md`](docs/ALL-STATE-AND-DRAG-AND-DROP.md).
@@ -37,6 +37,7 @@ Routing details live in [`docs/ROUTING-AND-STRUCTURE.md`](docs/ROUTING-AND-STRUC
 ### 4. Frontend UX and component improvements
 
 - **Validation that doesn’t fight the user**: Add-task and add-column modals keep the dialog open and preserve form values on validation errors, while surfacing issues via toasts.
+- **Shared `TaskForm` for create/edit**: A reusable `TaskForm` component powers both “create task” and “edit task” flows, with title/description length counters, basic field validation, dynamic subtasks (add/remove), and a status dropdown that is validated against the current board’s columns.
 - **Reusable `ThemeToggle`**: A shared `ThemeToggle` component powers theme switching in both the header and sidebar, wired into the global theme slice.
 - **Shared `useCurrentBoard` selector hook**: All “current board” consumers (layout, header, board view) use a single hook that translates the route param into `{ board, boardIndex }`, so changing how boards are addressed later is a one-file change.
 - **Consistent loading and toast experience**: A global loading overlay and toast host read from the store’s UI slice, giving consistent feedback across routes and flows.

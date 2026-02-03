@@ -70,12 +70,24 @@ function DraggableTask({
   onOpenDetails: () => void;
 }) {
   const id = encodeTaskId(boardIndex, columnName, task.title);
-  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
+  const {
+    attributes,
+    listeners,
+    setNodeRef: setDragRef,
+    isDragging,
+  } = useDraggable({
     id,
   });
+  const { setNodeRef: setDropRef } = useDroppable({
+    id,
+  });
+  const setRef = (node: HTMLElement | null) => {
+    setDragRef(node);
+    setDropRef(node);
+  };
   return (
     <li
-      ref={setNodeRef}
+      ref={setRef}
       className="app-board-task"
       style={{ opacity: isDragging ? 0.5 : 1 }}
       onClick={onOpenDetails}
@@ -154,25 +166,66 @@ export function BoardView() {
   const handleDragEnd = useCallback(
     (event: DragEndEvent) => {
       const { active, over } = event;
-      if (boardIndex === null || !over) return;
-      const taskData = decodeTaskId(String(active.id));
-      const columnData = decodeColumnId(String(over.id));
-      if (
-        !taskData ||
-        !columnData ||
-        taskData.boardIndex !== boardIndex ||
-        columnData.boardIndex !== boardIndex
-      )
+      if (boardIndex === null || !over || !board) return;
+
+      const activeId = String(active.id);
+      const overId = String(over.id);
+
+      const activeTask = decodeTaskId(activeId);
+      if (!activeTask || activeTask.boardIndex !== boardIndex) return;
+
+      const overTask = decodeTaskId(overId);
+
+      // If dropped on a task in the same column, reorder within that column.
+      if (overTask && overTask.boardIndex === boardIndex) {
+        const { columnName: fromColumn, taskTitle } = activeTask;
+        const { columnName: toColumn, taskTitle: targetTitle } = overTask;
+
+        const fromCol = board.columns.find((c) => c.name === fromColumn);
+        const toCol = board.columns.find((c) => c.name === toColumn);
+
+        if (!fromCol || !toCol) return;
+
+        const fromIndex = fromCol.tasks.findIndex(
+          (task) => task.title === taskTitle
+        );
+        const toIndex = toCol.tasks.findIndex(
+          (task) => task.title === targetTitle
+        );
+
+        if (fromIndex === -1 || toIndex === -1) return;
+
+        if (fromColumn === toColumn) {
+          if (fromIndex === toIndex) return;
+          dispatch({
+            type: 'REORDER_TASK',
+            payload: {
+              boardIndex,
+              columnName: fromColumn,
+              fromIndex,
+              toIndex,
+            },
+          });
+          return;
+        }
+        // Different columns: fall through to column-level move below.
+      }
+
+      const columnData = decodeColumnId(overId);
+      if (!columnData || columnData.boardIndex !== boardIndex || !activeTask) {
         return;
-      const { columnName: fromColumn, taskTitle } = taskData;
+      }
+
+      const { columnName: fromColumn, taskTitle } = activeTask;
       const toColumn = columnData.columnName;
       if (fromColumn === toColumn) return;
+
       dispatch({
         type: 'MOVE_TASK',
         payload: { boardIndex, fromColumn, toColumn, taskTitle },
       });
     },
-    [boardIndex, dispatch]
+    [board, boardIndex, dispatch]
   );
 
   if (!board) {

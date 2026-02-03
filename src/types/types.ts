@@ -88,6 +88,15 @@ export type BoardsAction =
       payload: { boardIndex: number; columnName: string; taskTitle: string };
     }
   | {
+      type: 'REORDER_TASK';
+      payload: {
+        boardIndex: number;
+        columnName: string;
+        fromIndex: number;
+        toIndex: number;
+      };
+    }
+  | {
       type: 'MOVE_TASK';
       payload: {
         boardIndex: number;

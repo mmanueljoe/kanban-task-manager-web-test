@@ -5,6 +5,7 @@ import { Modal } from '../ui/Modal';
 import { Checkbox } from '../ui/Checkbox';
 import { useState, useRef, useEffect } from 'react';
 import iconEllipsis from '@assets/icon-vertical-ellipsis.svg';
+import { EditTaskModal } from './EditTaskModal';
 
 export function TaskDetailsModal({
   open,
@@ -17,6 +18,7 @@ export function TaskDetailsModal({
   const { startLoading, stopLoading, showToast } = useUi();
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const [isEditOpen, setIsEditOpen] = useState(false);
 
   const board = boardIndex !== null ? boards[boardIndex] : null;
   const column = board?.columns.find((c) => c.name === columnName);
@@ -71,133 +73,148 @@ export function TaskDetailsModal({
   };
 
   return (
-    <Modal open={open} onClose={onClose} aria-label="Task details">
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'flex-start',
-          marginBottom: 24,
-        }}
-      >
-        <h2 className="app-modal-title" style={{ flex: 1, margin: 0 }}>
-          {task.title}
-        </h2>
-        <div ref={menuRef} style={{ position: 'relative' }}>
-          <button
-            type="button"
-            aria-label="More options"
-            aria-expanded={menuOpen}
-            aria-haspopup="true"
-            onClick={() => setMenuOpen((o) => !o)}
-            style={{
-              padding: 10,
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              color: 'var(--text-muted)',
-            }}
-          >
-            <img src={iconEllipsis} alt="" width={5} height={20} />
-          </button>
-          {menuOpen && (
-            <div
-              role="menu"
+    <>
+      <Modal open={open} onClose={onClose} aria-label="Task details">
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'flex-start',
+            marginBottom: 24,
+          }}
+        >
+          <h2 className="app-modal-title" style={{ flex: 1, margin: 0 }}>
+            {task.title}
+          </h2>
+          <div ref={menuRef} style={{ position: 'relative' }}>
+            <button
+              type="button"
+              aria-label="More options"
+              aria-expanded={menuOpen}
+              aria-haspopup="true"
+              onClick={() => setMenuOpen((o) => !o)}
               style={{
-                position: 'absolute',
-                top: '100%',
-                right: 0,
-                marginTop: 8,
-                minWidth: 192,
-                padding: 8,
-                borderRadius: 8,
-                background: 'var(--bg-main)',
-                border: '1px solid var(--lines)',
-                boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)',
-                zIndex: 20,
+                padding: 10,
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                color: 'var(--text-muted)',
               }}
             >
-              <button
-                type="button"
-                role="menuitem"
-                className="dropdown-option"
-                style={{ display: 'block', width: '100%', textAlign: 'left' }}
-                onClick={() => {
-                  setMenuOpen(false);
-                  // TODO: Open EditTaskModal
-                }}
-              >
-                Edit Task
-              </button>
-              <button
-                type="button"
-                role="menuitem"
-                className="dropdown-option"
+              <img src={iconEllipsis} alt="" width={5} height={20} />
+            </button>
+            {menuOpen && (
+              <div
+                role="menu"
                 style={{
-                  display: 'block',
-                  width: '100%',
-                  textAlign: 'left',
-                  color: 'var(--destructive)',
+                  position: 'absolute',
+                  top: '100%',
+                  right: 0,
+                  marginTop: 8,
+                  minWidth: 192,
+                  padding: 8,
+                  borderRadius: 8,
+                  background: 'var(--bg-main)',
+                  border: '1px solid var(--lines)',
+                  boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)',
+                  zIndex: 20,
                 }}
-                onClick={handleDeleteTask}
               >
-                Delete Task
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {task.description && (
-        <p
-          className="body-l"
-          style={{
-            marginBottom: 24,
-            color: 'var(--text-muted)',
-            lineHeight: 1.6,
-          }}
-        >
-          {task.description}
-        </p>
-      )}
-
-      {task.subtasks && task.subtasks.length > 0 && (
-        <div style={{ marginBottom: 24 }}>
-          <label
-            className="input-label"
-            style={{ display: 'block', marginBottom: 16 }}
-          >
-            Subtasks ({completedSubtasks} of {totalSubtasks})
-          </label>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            {task.subtasks.map((subtask) => (
-              <Checkbox
-                key={subtask.title}
-                label={subtask.title}
-                checked={subtask.isCompleted}
-                onCheckedChange={() => handleSubtaskToggle(subtask.title)}
-              />
-            ))}
+                <button
+                  type="button"
+                  role="menuitem"
+                  className="dropdown-option"
+                  style={{ display: 'block', width: '100%', textAlign: 'left' }}
+                  onClick={() => {
+                    setMenuOpen(false);
+                    setIsEditOpen(true);
+                  }}
+                >
+                  Edit Task
+                </button>
+                <button
+                  type="button"
+                  role="menuitem"
+                  className="dropdown-option"
+                  style={{
+                    display: 'block',
+                    width: '100%',
+                    textAlign: 'left',
+                    color: 'var(--destructive)',
+                  }}
+                  onClick={handleDeleteTask}
+                >
+                  Delete Task
+                </button>
+              </div>
+            )}
           </div>
         </div>
-      )}
 
-      <div className="input-wrap">
-        <label className="input-label">Current Status</label>
-        <div
-          className="input"
-          style={{
-            padding: '12px 16px',
-            backgroundColor: 'var(--bg-input)',
-            border: '1px solid var(--lines)',
-            borderRadius: 4,
-            color: 'var(--text-primary)',
-            cursor: 'default',
-          }}
-        >
-          {task.status || columnName}
+        {task.description && (
+          <p
+            className="body-l"
+            style={{
+              marginBottom: 24,
+              color: 'var(--text-muted)',
+              lineHeight: 1.6,
+            }}
+          >
+            {task.description}
+          </p>
+        )}
+
+        {task.subtasks && task.subtasks.length > 0 && (
+          <div style={{ marginBottom: 24 }}>
+            <label
+              className="input-label"
+              style={{ display: 'block', marginBottom: 16 }}
+            >
+              Subtasks ({completedSubtasks} of {totalSubtasks})
+            </label>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              {task.subtasks.map((subtask) => (
+                <Checkbox
+                  key={subtask.title}
+                  label={subtask.title}
+                  checked={subtask.isCompleted}
+                  onCheckedChange={() => handleSubtaskToggle(subtask.title)}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div className="input-wrap">
+          <label className="input-label">Current Status</label>
+          <div
+            className="input"
+            style={{
+              padding: '12px 16px',
+              backgroundColor: 'var(--bg-input)',
+              border: '1px solid var(--lines)',
+              borderRadius: 4,
+              color: 'var(--text-primary)',
+              cursor: 'default',
+            }}
+          >
+            {task.status || columnName}
+          </div>
         </div>
-      </div>
-    </Modal>
+      </Modal>
+
+      <EditTaskModal
+        open={isEditOpen}
+        onClose={() => setIsEditOpen(false)}
+        columnOptions={
+          board
+            ? board.columns.map((c) => ({ value: c.name, label: c.name }))
+            : []
+        }
+        boardIndex={boardIndex}
+        columnName={columnName}
+        taskTitle={taskTitle}
+      />
+    </>
   );
 }

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { Modal } from '@components/ui/Modal';
 import { Button } from '@components/ui/Button';
+import { Input } from '@components/ui/Input';
 import iconCross from '@assets/icon-cross.svg';
 import { useBoards } from '@/hooks/useBoards';
 import { useUi } from '@/hooks/useUi';
@@ -19,6 +20,7 @@ export function AddBoardModal({ open, onClose }: AddBoardModalProps) {
 
   const [name, setName] = useState('');
   const [columns, setColumns] = useState<string[]>(['Todo', 'Doing']);
+  const [errors, setErrors] = useState<{ name?: string; columns?: string }>({});
 
   const addColumn = () => setColumns((c) => [...c, '']);
   const removeColumn = (i: number) =>
@@ -34,25 +36,34 @@ export function AddBoardModal({ open, onClose }: AddBoardModalProps) {
     e.preventDefault();
 
     const trimmedName = name.trim();
-    if (!trimmedName) {
-      showToast({
-        type: 'error',
-        message: 'Please provide a name for the board.',
-      });
-      return;
-    }
-
     const cleanedColumns = columns
       .map((c) => c.trim())
       .filter((c) => c.length > 0);
 
+    const nextErrors: { name?: string; columns?: string } = {};
+
+    if (!trimmedName) {
+      nextErrors.name = 'Board name is required.';
+      showToast({
+        type: 'error',
+        message: 'Please provide a name for the board.',
+      });
+    }
+
     if (cleanedColumns.length === 0) {
+      nextErrors.columns = 'Please add at least one column for the new board.';
       showToast({
         type: 'error',
         message: 'Please add at least one column for the new board.',
       });
+    }
+
+    if (nextErrors.name || nextErrors.columns) {
+      setErrors(nextErrors);
       return;
     }
+
+    setErrors({});
 
     const newBoardIndex = boards.length;
 
@@ -84,14 +95,14 @@ export function AddBoardModal({ open, onClose }: AddBoardModalProps) {
     <Modal open={open} onClose={onClose} aria-label="Add board">
       <h2 className="app-modal-title">Add New Board</h2>
       <form onSubmit={handleSubmit}>
-        <div className="input-wrap" style={{ marginBottom: 24 }}>
-          <label className="input-label">Board Name</label>
-          <input
-            type="text"
-            className="input"
+        <div style={{ marginBottom: 24 }}>
+          <Input
+            id="board-name"
+            label="Board Name"
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="e.g. Platform Launch"
+            error={errors.name}
           />
         </div>
         <div style={{ marginBottom: 24 }}>
@@ -134,6 +145,9 @@ export function AddBoardModal({ open, onClose }: AddBoardModalProps) {
               </button>
             </div>
           ))}
+          {errors.columns && (
+            <span className="input-error-text">{errors.columns}</span>
+          )}
           <Button
             type="button"
             variant="secondary"

@@ -1,145 +1,103 @@
-import { useState } from 'react';
 import { Modal } from '@components/ui/Modal';
-import { Button } from '@components/ui/Button';
-import { Dropdown } from '@components/ui/Dropdown';
-import iconCross from '@assets/icon-cross.svg';
+import { useBoards } from '@/hooks/useBoards';
 import { useUi } from '@/hooks/useUi';
+import type { Task } from '@/types/types';
+import { TaskForm, type TaskFormValues } from './TaskForm';
 
 type EditTaskModalProps = {
   open: boolean;
   onClose: () => void;
   columnOptions: { value: string; label: string }[];
-  initialTitle?: string;
-  initialDescription?: string;
-  initialSubtasks?: string[];
-  initialStatus?: string;
+  boardIndex: number | null;
+  columnName: string | null;
+  taskTitle: string | null;
 };
 
 export function EditTaskModal({
   open,
   onClose,
   columnOptions,
-  initialTitle = '',
-  initialDescription = '',
-  initialSubtasks = ['', ''],
-  initialStatus = '',
+  boardIndex,
+  columnName,
+  taskTitle,
 }: EditTaskModalProps) {
-  const { showToast } = useUi();
-  const [title, setTitle] = useState(initialTitle);
-  const [description, setDescription] = useState(initialDescription);
-  const [subtasks, setSubtasks] = useState(
-    initialSubtasks.length > 0 ? initialSubtasks : ['']
-  );
-  const [status, setStatus] = useState(
-    (initialStatus || columnOptions[0]?.value) ?? ''
-  );
+  const { boards, dispatch } = useBoards();
+  const { showToast, startLoading, stopLoading } = useUi();
 
-  const addSubtask = () => setSubtasks((s) => [...s, '']);
-  const removeSubtask = (i: number) =>
-    setSubtasks((s) => s.filter((_, idx) => idx !== i));
-  const updateSubtask = (i: number, v: string) =>
-    setSubtasks((s) => {
-      const next = [...s];
-      next[i] = v;
-      return next;
-    });
+  const board =
+    boardIndex !== null && boardIndex >= 0 ? boards[boardIndex] : null;
+  const column =
+    board && columnName
+      ? board.columns.find((c) => c.name === columnName)
+      : null;
+  const task =
+    column && taskTitle
+      ? column.tasks.find((t) => t.title === taskTitle)
+      : null;
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    showToast({ type: 'success', message: 'Task changes saved' });
-    onClose();
+  const effectiveColumnName =
+    columnName ?? task?.status ?? columnOptions[0]?.value ?? '';
+
+  const initialValues: TaskFormValues = {
+    title: task?.title ?? '',
+    description: task?.description ?? '',
+    status: task?.status ?? effectiveColumnName,
+    subtasks: task?.subtasks?.map((s) => s.title) ?? ['', ''],
+  };
+
+  const handleSubmit = (values: TaskFormValues) => {
+    if (boardIndex == null || !effectiveColumnName || !taskTitle || !task) {
+      showToast({
+        type: 'error',
+        message: 'Could not update task. Please try again.',
+      });
+      onClose();
+      return;
+    }
+
+    const updatedTask: Task = {
+      ...task,
+      title: values.title.trim(),
+      description: values.description.trim(),
+      status: values.status,
+      subtasks: values.subtasks
+        .map((s) => s.trim())
+        .filter((s) => s.length > 0)
+        .map((s) => ({
+          title: s,
+          isCompleted:
+            task.subtasks?.find((subtask) => subtask.title === s)
+              ?.isCompleted ?? false,
+        })),
+    };
+
+    startLoading('editTask');
+    try {
+      dispatch({
+        type: 'UPDATE_TASK',
+        payload: {
+          boardIndex,
+          columnName: effectiveColumnName,
+          taskTitle,
+          task: updatedTask,
+        },
+      });
+      showToast({ type: 'success', message: 'Task changes saved' });
+    } finally {
+      stopLoading('editTask');
+      onClose();
+    }
   };
 
   return (
     <Modal open={open} onClose={onClose} aria-label="Edit task">
       <h2 className="app-modal-title">Edit Task</h2>
-      <form onSubmit={handleSubmit}>
-        <div className="input-wrap" style={{ marginBottom: 24 }}>
-          <label className="input-label">Title</label>
-          <input
-            type="text"
-            className="input"
-            placeholder="e.g. Take coffee break."
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-          />
-        </div>
-        <div className="input-wrap" style={{ marginBottom: 24 }}>
-          <label className="input-label">Description</label>
-          <textarea
-            className="input"
-            placeholder="e.g. It's always good to take a break."
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            rows={3}
-            style={{ resize: 'vertical', minHeight: 80 }}
-          />
-        </div>
-        <div style={{ marginBottom: 24 }}>
-          <label
-            className="input-label"
-            style={{ display: 'block', marginBottom: 8 }}
-          >
-            Subtasks
-          </label>
-          {subtasks.map((val, i) => (
-            <div
-              key={i}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 8,
-                marginBottom: 8,
-              }}
-            >
-              <input
-                type="text"
-                className="input"
-                value={val}
-                onChange={(e) => updateSubtask(i, e.target.value)}
-                style={{ flex: 1 }}
-              />
-              <button
-                type="button"
-                onClick={() => removeSubtask(i)}
-                aria-label="Remove subtask"
-                style={{
-                  padding: 8,
-                  background: 'none',
-                  border: 'none',
-                  cursor: 'pointer',
-                  color: 'var(--text-muted)',
-                }}
-              >
-                <img src={iconCross} alt="" width={14} height={14} />
-              </button>
-            </div>
-          ))}
-          <Button
-            type="button"
-            variant="secondary"
-            size="large"
-            onClick={addSubtask}
-            style={{ width: '100%' }}
-          >
-            + Add New Subtask
-          </Button>
-        </div>
-        <div className="input-wrap" style={{ marginBottom: 24 }}>
-          <label className="input-label">Status</label>
-          <Dropdown
-            options={columnOptions}
-            value={status}
-            onChange={setStatus}
-            placeholder="Todo"
-          />
-        </div>
-        <div className="app-modal-actions">
-          <Button type="submit" variant="primary" size="large">
-            Save Changes
-          </Button>
-        </div>
-      </form>
+      <TaskForm
+        mode="edit"
+        initialValues={initialValues}
+        columns={columnOptions}
+        onSubmit={handleSubmit}
+      />
     </Modal>
   );
 }
