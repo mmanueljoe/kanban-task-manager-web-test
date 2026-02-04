@@ -11,12 +11,6 @@ type DeleteTaskModalProps = {
   columnName: string | null;
 };
 
-/**
- * DeleteTaskModal shows a confirmation dialog before deleting a task.
- *
- * This prevents accidental deletion of tasks by requiring the user to
- * explicitly confirm their intent.
- */
 export function DeleteTaskModal({
   open,
   onClose,
