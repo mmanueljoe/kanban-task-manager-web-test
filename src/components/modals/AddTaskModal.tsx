@@ -1,7 +1,7 @@
 import { Modal } from '@components/ui/Modal';
 import { useBoards } from '@/hooks/useBoards';
 import { useUi } from '@/hooks/useUi';
-import type { Task } from '@/types/types';
+import { generateTaskId, type Task } from '@/types/types';
 import { TaskForm, type TaskFormValues } from './TaskForm';
 
 type AddTaskModalProps = {
@@ -32,6 +32,7 @@ export function AddTaskModal({
     const { title, description, status, subtasks } = values;
 
     const newTask: Task = {
+      id: generateTaskId(),
       title: title.trim(),
       description: description.trim(),
       status,

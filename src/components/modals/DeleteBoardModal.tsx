@@ -34,6 +34,18 @@ export function DeleteBoardModal({
       dispatch({ type: 'DELETE_BOARD', payload: { boardIndex } });
       onConfirm();
       showToast({ type: 'success', message: 'Board deleted' });
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        showToast({
+          type: 'error',
+          message: `Failed to delete board: ${error.message}`,
+        });
+      } else {
+        showToast({
+          type: 'error',
+          message: 'Failed to delete board. Please try again.',
+        });
+      }
     } finally {
       stopLoading('deleteBoard');
       onClose();

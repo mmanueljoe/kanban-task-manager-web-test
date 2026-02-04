@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { RouteProvider } from '@routes/RouteProvider';
 import { useTheme } from '@hooks/useTheme';
 import { UiProvider } from '@context/UiContext';
@@ -7,8 +8,14 @@ import { LoadingOverlay } from '@components/ui/LoadingOverlay';
 
 function AppContent() {
   const { theme } = useTheme();
+
+  // Apply theme to document element so portals (modals, toasts) also get themed
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+  }, [theme]);
+
   return (
-    <div data-theme={theme} className="app-root">
+    <div className="app-root">
       <UiProvider>
         <StoreHydration>
           <RouteProvider />

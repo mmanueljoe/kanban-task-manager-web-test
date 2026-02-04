@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Modal } from '@components/ui/Modal';
 import { Button } from '@components/ui/Button';
-import iconCross from '@assets/icon-cross.svg';
+import { Input } from '@components/ui/Input';
+import { RemovableInput } from '@components/ui/RemovableInput';
 import { useBoards } from '@/hooks/useBoards';
 import { useUi } from '@/hooks/useUi';
 import type { Board } from '@/types/types';
@@ -82,11 +83,10 @@ export function EditBoardModal({
     <Modal open={open} onClose={onClose} aria-label="Edit board">
       <h2 className="app-modal-title">Edit Board</h2>
       <form onSubmit={handleSubmit}>
-        <div className="input-wrap" style={{ marginBottom: 24 }}>
-          <label className="input-label">Board Name</label>
-          <input
-            type="text"
-            className="input"
+        <div style={{ marginBottom: 24 }}>
+          <Input
+            id="edit-board-name"
+            label="Board Name"
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="e.g. Platform Launch"
@@ -100,37 +100,14 @@ export function EditBoardModal({
             Board Columns
           </label>
           {columns.map((val, i) => (
-            <div
+            <RemovableInput
               key={i}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 8,
-                marginBottom: 8,
-              }}
-            >
-              <input
-                type="text"
-                className="input"
-                value={val}
-                onChange={(e) => updateColumn(i, e.target.value)}
-                style={{ flex: 1 }}
-              />
-              <button
-                type="button"
-                onClick={() => removeColumn(i)}
-                aria-label="Remove column"
-                style={{
-                  padding: 8,
-                  background: 'none',
-                  border: 'none',
-                  cursor: 'pointer',
-                  color: 'var(--text-muted)',
-                }}
-              >
-                <img src={iconCross} alt="" width={14} height={14} />
-              </button>
-            </div>
+              id={`edit-board-column-${i}`}
+              value={val}
+              onChange={(v) => updateColumn(i, v)}
+              onRemove={() => removeColumn(i)}
+              placeholder="e.g. In Progress"
+            />
           ))}
           <Button
             type="button"

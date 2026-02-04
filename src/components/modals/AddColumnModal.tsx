@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Modal } from '@components/ui/Modal';
 import { Button } from '@components/ui/Button';
+import { Input } from '@components/ui/Input';
 import { useBoards } from '@/hooks/useBoards';
 import { useUi } from '@/hooks/useUi';
 
@@ -18,10 +19,12 @@ export function AddColumnModal({
   const { dispatch } = useBoards();
   const { startLoading, stopLoading, showToast } = useUi();
   const [name, setName] = useState('');
+  const [error, setError] = useState<string | undefined>();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (boardIndex === null || !name.trim()) {
+      setError('Column name is required.');
       showToast({
         type: 'error',
         message: 'Please provide a name for the new column.',
@@ -29,6 +32,7 @@ export function AddColumnModal({
       return;
     }
 
+    setError(undefined);
     startLoading('addColumn');
     try {
       dispatch({
@@ -50,14 +54,14 @@ export function AddColumnModal({
     <Modal open={open} onClose={onClose} aria-label="Add column">
       <h2 className="app-modal-title">Add New Column</h2>
       <form onSubmit={handleSubmit}>
-        <div className="input-wrap" style={{ marginBottom: 24 }}>
-          <label className="input-label">Column Name</label>
-          <input
-            type="text"
-            className="input"
+        <div style={{ marginBottom: 24 }}>
+          <Input
+            id="column-name"
+            label="Column Name"
             placeholder="e.g. In Review"
             value={name}
             onChange={(e) => setName(e.target.value)}
+            error={error}
           />
         </div>
         <div className="app-modal-actions">

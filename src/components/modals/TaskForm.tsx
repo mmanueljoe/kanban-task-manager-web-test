@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Button } from '@components/ui/Button';
 import { Dropdown } from '@components/ui/Dropdown';
 import { Input } from '@components/ui/Input';
-import iconCross from '@assets/icon-cross.svg';
+import { RemovableInput } from '@components/ui/RemovableInput';
 
 export type TaskFormValues = {
   title: string;
@@ -196,41 +196,16 @@ export function TaskForm({
           Subtasks
         </label>
         {values.subtasks.map((subtask, index) => (
-          <div
+          <RemovableInput
             key={index}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 8,
-              marginBottom: 8,
-            }}
-          >
-            <Input
-              id={`task-subtask-${index}`}
-              placeholder={
-                index === 0 ? 'e.g. Make coffee.' : 'e.g. Drink coffee & smile.'
-              }
-              value={subtask}
-              onChange={(event) =>
-                handleSubtaskChange(index, event.target.value)
-              }
-              className=""
-            />
-            <button
-              type="button"
-              onClick={() => handleRemoveSubtask(index)}
-              aria-label="Remove subtask"
-              style={{
-                padding: 8,
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer',
-                color: 'var(--text-muted)',
-              }}
-            >
-              <img src={iconCross} alt="" width={14} height={14} />
-            </button>
-          </div>
+            id={`task-subtask-${index}`}
+            value={subtask}
+            onChange={(value) => handleSubtaskChange(index, value)}
+            onRemove={() => handleRemoveSubtask(index)}
+            placeholder={
+              index === 0 ? 'e.g. Make coffee.' : 'e.g. Drink coffee & smile.'
+            }
+          />
         ))}
         <Button
           type="button"

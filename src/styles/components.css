@@ -111,6 +111,29 @@
     color: var(--destructive);
   }
 
+  /* Removable input: input with a remove button (used for columns, subtasks) */
+  .app-removable-input {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  .app-removable-input .input-wrap {
+    flex: 1;
+  }
+  .app-removable-input-btn {
+    padding: 8px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-muted);
+    flex-shrink: 0;
+    transition: opacity 0.15s;
+  }
+  .app-removable-input-btn:hover {
+    opacity: 0.7;
+  }
+
   /* Checkbox: row, box, label */
   .checkbox {
     display: flex;
@@ -354,6 +377,88 @@
   }
   [data-theme='dark'] .app-board-dropdown-toggle::after {
     transform: translateX(20px);
+  }
+
+  /* Icon button: button with only an icon */
+  .app-icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-muted);
+    border-radius: 4px;
+    transition: background-color 0.15s;
+  }
+  .app-icon-btn:hover {
+    background-color: var(--secondary-bg);
+  }
+  [data-theme='dark'] .app-icon-btn:hover {
+    background-color: var(--lines);
+  }
+  .app-icon-btn-sm {
+    padding: 6px;
+  }
+
+  /* Popover menu: reusable dropdown menu component */
+  .app-popover-menu {
+    position: relative;
+    display: inline-block;
+  }
+  .app-popover-menu-panel {
+    position: absolute;
+    top: 100%;
+    z-index: 20;
+    margin-top: 8px;
+    min-width: 192px;
+    padding: 8px;
+    border-radius: 8px;
+    background-color: var(--bg-main);
+    border: 1px solid var(--lines);
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+  }
+  .app-popover-menu-right {
+    right: 0;
+  }
+  .app-popover-menu-left {
+    left: 0;
+  }
+  .app-popover-menu-item {
+    display: block;
+    width: 100%;
+    padding: 8px 16px;
+    text-align: left;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 500;
+    font-size: 13px;
+    line-height: 23px;
+    color: var(--text-muted);
+    background: none;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition:
+      background-color 0.15s,
+      color 0.15s;
+  }
+  .app-popover-menu-item:hover {
+    background-color: var(--secondary-bg);
+    color: var(--text-primary);
+  }
+  [data-theme='dark'] .app-popover-menu-item:hover {
+    background-color: var(--lines);
+  }
+  .app-popover-menu-item-destructive {
+    color: var(--destructive);
+  }
+  .app-popover-menu-item-destructive:hover {
+    color: var(--destructive);
+  }
+  .app-popover-menu-item:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
 
   /* Loading spinner animation */

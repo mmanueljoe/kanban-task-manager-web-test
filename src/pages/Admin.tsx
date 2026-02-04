@@ -1,4 +1,5 @@
 import { Button } from '@components/ui/Button';
+import { PageCard } from '@components/ui/PageCard';
 import { useAuth } from '@hooks/useAuth';
 import { useNavigate } from 'react-router';
 
@@ -13,11 +14,15 @@ export function Admin() {
 
   return (
     <div className="app-main">
-      <h1 className="heading-xl app-section-title">Admin</h1>
-      <p className="body-l">Logged in as {user?.name ?? '—'}</p>
-      <Button variant="secondary" size="large" onClick={handleLogout}>
-        Log out
-      </Button>
+      <PageCard>
+        <h1 className="heading-xl app-section-title">Admin</h1>
+        <p className="body-l" style={{ marginBottom: 24 }}>
+          Logged in as {user?.name ?? '—'}
+        </p>
+        <Button variant="secondary" size="large" onClick={handleLogout}>
+          Log out
+        </Button>
+      </PageCard>
     </div>
   );
 }

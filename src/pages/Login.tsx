@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router';
 import { Button } from '@components/ui/Button';
+import { PageCard } from '@components/ui/PageCard';
 import { useAuth } from '@hooks/useAuth';
 
 export function Login() {
@@ -18,16 +19,18 @@ export function Login() {
 
   return (
     <div className="app-main">
-      <h1 className="heading-xl app-section-title">Log in</h1>
-      <form
-        onSubmit={handleSubmit}
-        className="app-stack-4"
-        style={{ maxWidth: 320 }}
-      >
-        <Button type="submit" variant="primary" size="large">
-          Log in (mock)
-        </Button>
-      </form>
+      <PageCard>
+        <h1 className="heading-xl app-section-title">Log in</h1>
+        <form
+          onSubmit={handleSubmit}
+          className="app-stack-4"
+          style={{ maxWidth: 320 }}
+        >
+          <Button type="submit" variant="primary" size="large">
+            Log in (mock)
+          </Button>
+        </form>
+      </PageCard>
     </div>
   );
 }

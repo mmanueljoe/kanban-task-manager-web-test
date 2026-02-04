@@ -33,7 +33,8 @@
     --bg-secondary: #f4f7fd;
   }
 
-  [data-theme='dark'] {
+  [data-theme='dark'],
+  :root[data-theme='dark'] {
     --primary: #635fc7;
     --primary-hover: #a8a4ff;
     --secondary-bg: #20212c;

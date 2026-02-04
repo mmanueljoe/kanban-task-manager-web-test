@@ -1,11 +1,12 @@
 import { useBoards } from '@/hooks/useBoards';
-import { useUi } from '@/hooks/useUi';
+import { useClickOutside } from '@/hooks/useClickOutside';
 import type { TaskDetailsModalProps } from '@/types/types';
 import { Modal } from '../ui/Modal';
 import { Checkbox } from '../ui/Checkbox';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import iconEllipsis from '@assets/icon-vertical-ellipsis.svg';
 import { EditTaskModal } from './EditTaskModal';
+import { DeleteTaskModal } from './DeleteTaskModal';
 
 export function TaskDetailsModal({
   open,
@@ -15,25 +16,16 @@ export function TaskDetailsModal({
   taskTitle,
 }: TaskDetailsModalProps) {
   const { boards, dispatch } = useBoards();
-  const { startLoading, stopLoading, showToast } = useUi();
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const [isEditOpen, setIsEditOpen] = useState(false);
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+
+  useClickOutside(menuRef, () => setMenuOpen(false), menuOpen);
 
   const board = boardIndex !== null ? boards[boardIndex] : null;
   const column = board?.columns.find((c) => c.name === columnName);
   const task = column?.tasks.find((t) => t.title === taskTitle);
-
-  useEffect(() => {
-    if (!menuOpen) return;
-    function handleClickOutside(e: MouseEvent) {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setMenuOpen(false);
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [menuOpen]);
 
   if (!task || boardIndex === null || !columnName || !taskTitle) return null;
 
@@ -43,7 +35,7 @@ export function TaskDetailsModal({
 
   const handleSubtaskToggle = (subtaskTitle: string) => {
     dispatch({
-      type: 'TOOGLE_SUBTASK',
+      type: 'TOGGLE_SUBTASK',
       payload: {
         boardIndex,
         columnName,
@@ -53,78 +45,40 @@ export function TaskDetailsModal({
     });
   };
 
-  const handleDeleteTask = () => {
-    startLoading('deleteTask');
-    try {
-      dispatch({
-        type: 'DELETE_TASK',
-        payload: {
-          boardIndex,
-          columnName,
-          taskTitle,
-        },
-      });
-      showToast({ type: 'success', message: 'Task deleted' });
-    } finally {
-      stopLoading('deleteTask');
-      setMenuOpen(false);
-      onClose();
-    }
+  const handleDeleteClick = () => {
+    setMenuOpen(false);
+    setIsDeleteOpen(true);
+  };
+
+  const handleDeleteConfirmed = () => {
+    setIsDeleteOpen(false);
+    onClose();
   };
 
   return (
     <>
       <Modal open={open} onClose={onClose} aria-label="Task details">
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'flex-start',
-            marginBottom: 24,
-          }}
-        >
+        <div className="app-task-details-header">
           <h2 className="app-modal-title" style={{ flex: 1, margin: 0 }}>
             {task.title}
           </h2>
-          <div ref={menuRef} style={{ position: 'relative' }}>
+          <div ref={menuRef} className="app-task-details-menu">
             <button
               type="button"
               aria-label="More options"
               aria-expanded={menuOpen}
               aria-haspopup="true"
               onClick={() => setMenuOpen((o) => !o)}
-              style={{
-                padding: 10,
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer',
-                color: 'var(--text-muted)',
-              }}
+              className="app-icon-btn"
             >
               <img src={iconEllipsis} alt="" width={5} height={20} />
             </button>
             {menuOpen && (
-              <div
-                role="menu"
-                style={{
-                  position: 'absolute',
-                  top: '100%',
-                  right: 0,
-                  marginTop: 8,
-                  minWidth: 192,
-                  padding: 8,
-                  borderRadius: 8,
-                  background: 'var(--bg-main)',
-                  border: '1px solid var(--lines)',
-                  boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)',
-                  zIndex: 20,
-                }}
-              >
+              <div role="menu" className="app-task-details-menu-panel">
                 <button
                   type="button"
                   role="menuitem"
-                  className="dropdown-option"
-                  style={{ display: 'block', width: '100%', textAlign: 'left' }}
+                  className="app-popover-menu-item"
                   onClick={() => {
                     setMenuOpen(false);
                     setIsEditOpen(true);
@@ -135,14 +89,8 @@ export function TaskDetailsModal({
                 <button
                   type="button"
                   role="menuitem"
-                  className="dropdown-option"
-                  style={{
-                    display: 'block',
-                    width: '100%',
-                    textAlign: 'left',
-                    color: 'var(--destructive)',
-                  }}
-                  onClick={handleDeleteTask}
+                  className="app-popover-menu-item app-popover-menu-item-destructive"
+                  onClick={handleDeleteClick}
                 >
                   Delete Task
                 </button>
@@ -152,16 +100,7 @@ export function TaskDetailsModal({
         </div>
 
         {task.description && (
-          <p
-            className="body-l"
-            style={{
-              marginBottom: 24,
-              color: 'var(--text-muted)',
-              lineHeight: 1.6,
-            }}
-          >
-            {task.description}
-          </p>
+          <p className="app-task-details-description">{task.description}</p>
         )}
 
         {task.subtasks && task.subtasks.length > 0 && (
@@ -172,7 +111,7 @@ export function TaskDetailsModal({
             >
               Subtasks ({completedSubtasks} of {totalSubtasks})
             </label>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <div className="app-task-details-subtasks">
               {task.subtasks.map((subtask) => (
                 <Checkbox
                   key={subtask.title}
@@ -187,17 +126,7 @@ export function TaskDetailsModal({
 
         <div className="input-wrap">
           <label className="input-label">Current Status</label>
-          <div
-            className="input"
-            style={{
-              padding: '12px 16px',
-              backgroundColor: 'var(--bg-input)',
-              border: '1px solid var(--lines)',
-              borderRadius: 4,
-              color: 'var(--text-primary)',
-              cursor: 'default',
-            }}
-          >
+          <div className="app-task-details-status">
             {task.status || columnName}
           </div>
         </div>
@@ -214,6 +143,14 @@ export function TaskDetailsModal({
         boardIndex={boardIndex}
         columnName={columnName}
         taskTitle={taskTitle}
+      />
+
+      <DeleteTaskModal
+        open={isDeleteOpen}
+        onClose={handleDeleteConfirmed}
+        taskTitle={taskTitle}
+        boardIndex={boardIndex}
+        columnName={columnName}
       />
     </>
   );

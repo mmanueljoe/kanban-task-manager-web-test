@@ -167,7 +167,7 @@ export function boardsReducer(
         ),
       };
     }
-    case 'TOOGLE_SUBTASK':
+    case 'TOGGLE_SUBTASK':
       return {
         ...state,
         boards: state.boards.map((board, index) =>

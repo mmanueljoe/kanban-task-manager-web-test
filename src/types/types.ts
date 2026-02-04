@@ -37,11 +37,18 @@ export type Subtask = {
 };
 
 export type Task = {
+  id: string;
   title: string;
   description?: string;
   status?: string;
   subtasks?: Subtask[];
 };
+
+export type RawTask = Omit<Task, 'id'> & { id?: string };
+
+export function generateTaskId(): string {
+  return `task-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+}
 
 export type Column = {
   name: string;
@@ -106,7 +113,7 @@ export type BoardsAction =
       };
     }
   | {
-      type: 'TOOGLE_SUBTASK';
+      type: 'TOGGLE_SUBTASK';
       payload: {
         boardIndex: number;
         columnName: string;
