@@ -161,10 +161,12 @@ src/test/
   ├── mocks/
   │   ├── handlers.ts       # API mock definitions
   │   └── server.ts         # MSW server setup
-  ├── boardsReducer.test.ts # Pure function tests
-  ├── useStore.test.ts      # Store tests
-  ├── BoardView.test.tsx    # Component tests
-  └── TaskDetailsModal.test.tsx
+  ├── unit/
+  │   ├── boardsReducer.test.ts # Pure function tests
+  │   └── useStore.test.ts      # Store tests
+  └── integration/
+      ├── BoardView.test.tsx    # Component tests
+      └── TaskDetailsModal.test.tsx
 ```
 
 ### Configuration Files
@@ -749,7 +751,7 @@ yarn test --run
 yarn test --coverage
 
 # Run specific file
-yarn test src/test/useStore.test.ts
+yarn test src/test/unit/useStore.test.ts
 
 # Run tests matching pattern
 yarn test --grep "adds board"

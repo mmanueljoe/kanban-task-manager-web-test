@@ -437,8 +437,8 @@ The action type had a spelling error that was propagated across multiple files:
 - `src/types/types.ts` - Changed action type in BoardsAction union
 - `src/utils/boardsReducer.ts` - Updated case statement
 - `src/components/modals/TaskDetailsModal.tsx` - Updated dispatch call
-- `src/test/boardsReducer.test.ts` - Updated test
-- `src/test/TaskDetailsModal.test.tsx` - Updated test expectation
+- `src/test/unit/boardsReducer.test.ts` - Updated test
+- `src/test/integration/TaskDetailsModal.test.tsx` - Updated test expectation
 
 ### 2. Fixed Typo: "substask" → "subtask"
 
@@ -449,7 +449,7 @@ The `getSubtaskSummary` function was displaying "substask" instead of "subtask".
 **Before:** `${done} of ${total} substask${total !== 1 ? 's' : ''}`
 **After:** `${done} of ${total} subtask${total !== 1 ? 's' : ''}`
 
-Also updated the corresponding test assertion in `src/test/BoardView.test.tsx`.
+Also updated the corresponding test assertion in `src/test/integration/BoardView.test.tsx`.
 
 ### 3. Added Unique IDs to Tasks
 
@@ -533,6 +533,6 @@ All existing tests continue to pass without modification. This is because:
 
 The test for task deletion was updated to account for the confirmation modal:
 
-- `src/test/TaskDetailsModal.test.tsx` - Added mock for `DeleteTaskModal` and updated test to click through confirmation
+- `src/test/integration/TaskDetailsModal.test.tsx` - Added mock for `DeleteTaskModal` and updated test to click through confirmation
 
 You may optionally add tests for the new components (TaskCard, PageCard, useClickOutside, etc.) for better coverage.

@@ -4,11 +4,28 @@ import userEvent from '@testing-library/user-event';
 import type { ReactNode } from 'react';
 import { MemoryRouter } from 'react-router';
 
+type BoardTask = {
+  id: string;
+  title: string;
+  description: string;
+  status: string;
+  subtasks: { title: string; isCompleted: boolean }[];
+};
+
+type BoardColumn = { name: string; tasks: BoardTask[] };
+
+type Board = { name: string; columns: BoardColumn[] };
+
+type CurrentBoardHookResult = {
+  board: Board | null;
+  boardIndex: number | null;
+};
+
 const { mockUseBoards, mockUseCurrentBoard } = vi.hoisted(() => ({
   mockUseBoards: vi.fn(() => ({
     dispatch: vi.fn(),
   })),
-  mockUseCurrentBoard: vi.fn(() => ({
+  mockUseCurrentBoard: vi.fn<() => CurrentBoardHookResult>(() => ({
     board: {
       name: 'Test Board',
       columns: [
@@ -134,8 +151,8 @@ describe('BoardView', () => {
 
   it('shows board not found when no board', () => {
     mockUseCurrentBoard.mockReturnValue({
-      board: { name: 'Board not found', columns: [] },
-      boardIndex: 0,
+      board: null,
+      boardIndex: null,
     });
 
     renderWithRouter(<BoardView />);

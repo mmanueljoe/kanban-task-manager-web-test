@@ -29,7 +29,7 @@ yarn test:coverage # run tests with coverage report
 - `src/hooks/` - Custom hooks
 - `src/pages/` - Page components
 - `src/store/` - Zustand store
-- `src/test/` - Test files and mocks
+- `src/test/` - Test setup, mocks, and grouped tests (`unit/`, `integration/`)
 - `src/utils/` - Reducer and helper functions
 - `docs/` - Documentation on various topics
 
